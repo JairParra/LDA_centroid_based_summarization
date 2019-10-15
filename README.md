@@ -8,4 +8,6 @@
 
 ## Skip-gram word2vec model: 
 
+http://www.claudiobellei.com/2018/01/06/backprop-word2vec/
+
 ![](figs/Skipgram.png)
