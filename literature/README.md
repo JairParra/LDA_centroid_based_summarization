@@ -10,6 +10,7 @@
 - **NER with BERT** https://www.depends-on-the-definition.com/named-entity-recognition-with-bert/
 - **Text summarization with text rank** https://www.analyticsvidhya.com/blog/2018/11/introduction-text-summarization-textrank-python/?fbclid=IwAR3CTXMLgom8G2bIoci0Vkomj7eeRAKnGDJSrW9jxofsmQc_ADl4dkSv9UI
 - **Unsupervised text summarization using Word Embeddings** https://medium.com/jatana/unsupervised-text-summarization-using-sentence-embeddings-adb15ce83db1?fbclid=IwAR3lB4m7kuiBdq1OtByUU7KCtrj73hVyvmzyHnhuD7kMTWc6zwrTRjAhuvE
+- **Text generation with a RNN** https://www.tensorflow.org/tutorials/text/text_generation
 
 ## Other: 
 - **The backpropagation algorithm for Word2Vec** http://www.claudiobellei.com/2018/01/06/backprop-word2vec/
