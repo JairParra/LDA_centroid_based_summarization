@@ -6,6 +6,13 @@
 # COMP 550 Repository 
 - This repository will contain all the different scripts, data, outputs, files, links to literature and anything else that we will be using in the final project. 
 
+## Project Proposal: 
+
+
+## Our paper: 
+
+https://www.overleaf.com/9756941431sxgvqzpmrwdj
+
 ## Skip-gram word2vec model: 
 
 http://www.claudiobellei.com/2018/01/06/backprop-word2vec/
