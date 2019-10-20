@@ -4,6 +4,7 @@
 ## Papers: 
 - **Neural CRF Transducers for Sequence Lableing** https://arxiv.org/pdf/1811.01382.pdf?fbclid=IwAR2R4kjnBNtHMLcNhPSyoz2hxgDdmMfG9fgnsSwqwRt5cWhHV7ktAr0zmjY
 - **Massive MUlti-lingual Word Embeddings** http://www.cs.cmu.edu/~wammar/pubs/multilingual.pdf 
+- **Centroid-based Text Summarization through Compositionality of Word Embeddings** https://www.aclweb.org/anthology/W17-1003.pdf
 
 ## Tutorials: 
 - **Tensorflow word embeddings tutorial** https://www.tensorflow.org/tutorials/text/word_embeddings?fbclid=IwAR1uQ3f4jawAwIR12DeuDnqJMbD8Iq-9b6YNzMHtCO699EC0k3OPobDua60
