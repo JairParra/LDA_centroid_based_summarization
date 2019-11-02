@@ -2,6 +2,7 @@
 - All papers/sources we may potentially use may be included in here for ease of citation and reference. 
 
 ## Papers: 
+- **Query Focused Abstractive Summarization: Incorporating Query Relevance, Multi-Document Coverage, and Summary Length Constraints into seq2seq Models** https://arxiv.org/pdf/1801.07704.pdf
 - **ConceptNet at SemEval-2017 Task 2: Extending Word Embeddings with Multilingual Relational Knowledge** https://arxiv.org/pdf/1704.03560v2.pdf
 - **Neural CRF Transducers for Sequence Lableing** https://arxiv.org/pdf/1811.01382.pdf?fbclid=IwAR2R4kjnBNtHMLcNhPSyoz2hxgDdmMfG9fgnsSwqwRt5cWhHV7ktAr0zmjY
 - **Massive Multi-lingual Word Embeddings** http://www.cs.cmu.edu/~wammar/pubs/multilingual.pdf 
