@@ -10,6 +10,7 @@
 - **Text Summarization Techniques: A Brief Survey** https://arxiv.org/pdf/1707.02268.pdf
 - **Bi-LSTM LC CRF** https://arxiv.org/pdf/1508.01991.pdf
 - **Query Focused Abstractive Summarization: Incorporating Query Relevance, Multi-Document Coverage, and Summary Length Constraints into seq2seq Models** https://arxiv.org/pdf/1801.07704.pdf
+- **Latent Dirlichet Allocation** http://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf
 
 
 ## Tutorials: 
