@@ -9,6 +9,8 @@
 - **Centroid-based Text Summarization through Compositionality of Word Embeddings** https://www.aclweb.org/anthology/W17-1003.pdf
 - **Text Summarization Techniques: A Brief Survey** https://arxiv.org/pdf/1707.02268.pdf
 - **Bi-LSTM LC CRF** https://arxiv.org/pdf/1508.01991.pdf
+- **Query Focused Abstractive Summarization: Incorporating Query Relevance, Multi-Document Coverage, and Summary Length Constraints into seq2seq Models** https://arxiv.org/pdf/1801.07704.pdf
+
 
 ## Tutorials: 
 - **Tensorflow word embeddings tutorial** https://www.tensorflow.org/tutorials/text/word_embeddings?fbclid=IwAR1uQ3f4jawAwIR12DeuDnqJMbD8Iq-9b6YNzMHtCO699EC0k3OPobDua60
