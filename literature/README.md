@@ -6,13 +6,14 @@
 - **Centroid-based Text Summarization through Compositionality of Word Embeddings** https://www.aclweb.org/anthology/W17-1003.pdf
 - **Doc2Vec** https://cs.stanford.edu/~quocle/paragraph_vector.pdf
 - **Latent Dirlichet Allocation** http://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf
+- **Text Summarization Techniques: A Brief Survey** https://arxiv.org/pdf/1707.02268.pdf
+
 
 ## Papers: 
 - **Query Focused Abstractive Summarization: Incorporating Query Relevance, Multi-Document Coverage, and Summary Length Constraints into seq2seq Models** https://arxiv.org/pdf/1801.07704.pdf
 - **ConceptNet at SemEval-2017 Task 2: Extending Word Embeddings with Multilingual Relational Knowledge** https://arxiv.org/pdf/1704.03560v2.pdf
 - **Neural CRF Transducers for Sequence Lableing** https://arxiv.org/pdf/1811.01382.pdf?fbclid=IwAR2R4kjnBNtHMLcNhPSyoz2hxgDdmMfG9fgnsSwqwRt5cWhHV7ktAr0zmjY
 - **Massive Multi-lingual Word Embeddings** http://www.cs.cmu.edu/~wammar/pubs/multilingual.pdf 
-- **Text Summarization Techniques: A Brief Survey** https://arxiv.org/pdf/1707.02268.pdf
 - **Bi-LSTM LC CRF** https://arxiv.org/pdf/1508.01991.pdf
 - **Query Focused Abstractive Summarization: Incorporating Query Relevance, Multi-Document Coverage, and Summary Length Constraints into seq2seq Models** https://arxiv.org/pdf/1801.07704.pdf
 
