@@ -16,3 +16,28 @@ https://www.overleaf.com/9756941431sxgvqzpmrwdj
 
 ## Paper we want work on: 
 - **Centroid-based Text Summarization through Compositionality of Word Embeddings** https://www.aclweb.org/anthology/W17-1003.pdf
+
+
+### Centroid embeddings: 
+
+![](figs/Centroid_embedding.jpg)
+
+### Proposed change: 
+
+![](figs/LDA_centroid.jpg)
+
+### Sentence representation: 
+
+![](figs/sentence_representation.jpg)
+
+### Centroid-sentence similarity: 
+
+![](figs/centroid_sentence_similarity.jpg)
+
+### Sentence selection algorithm: 
+
+![](figs/sentence_selection_algorithm.jpg)
+
+### Rouge: 
+
+![](figs/ROUGE.jpg)
