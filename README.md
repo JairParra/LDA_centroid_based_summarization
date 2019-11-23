@@ -16,6 +16,7 @@ https://www.overleaf.com/9756941431sxgvqzpmrwdj
 
 ## Paper we want work on: 
 - **Centroid-based Text Summarization through Compositionality of Word Embeddings** https://www.aclweb.org/anthology/W17-1003.pdf
+- Link to their repo: https://github.com/gaetangate/text-summarizer/tree/master/text_summarizer
 
 
 ### Centroid embeddings: 
