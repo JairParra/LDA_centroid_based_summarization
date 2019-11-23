@@ -7,6 +7,7 @@
 #
 
 import numpy as np
+from tqdm import tqdm
 
 
 class FastVector:
@@ -22,7 +23,7 @@ class FastVector:
     ```
     """
 
-    def __init__(self, vector_file='', transform=None):
+    def __init__(self, vector_file='', transform=None, encoding='utf-8'):
         """Read in word vectors in fasttext format"""
         self.word2id = {}
 
@@ -30,11 +31,11 @@ class FastVector:
         self.id2word = []
 
         print('reading word vectors from %s' % vector_file)
-        with open(vector_file, 'r') as f:
+        with open(vector_file, 'r', encoding=encoding) as f:
             (self.n_words, self.n_dim) = \
                 (int(x) for x in f.readline().rstrip('\n').split(' '))
             self.embed = np.zeros((self.n_words, self.n_dim))
-            for i, line in enumerate(f):
+            for i, line in tqdm(enumerate(f),desc='loading vectors...'):
                 elems = line.rstrip('\n').split(' ')
                 self.word2id[elems[0]] = i
                 self.embed[i] = elems[1:self.n_dim+1]
@@ -71,7 +72,7 @@ class FastVector:
 
         # Header takes the guesswork out of loading by recording how many lines, vector dims
         fout.write(str(self.n_words) + " " + str(self.n_dim) + "\n")
-        for token in self.id2word:
+        for token in tqdm(self.id2word):
             vector_components = ["%.6f" % number for number in self[token]]
             vector_as_string = " ".join(vector_components)
 
