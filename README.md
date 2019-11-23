@@ -40,4 +40,4 @@ https://www.overleaf.com/9756941431sxgvqzpmrwdj
 
 ### Rouge: 
 
-![](figs.ROUGE.jpg)
+![](figs/ROUGE.jpg)
