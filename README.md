@@ -14,8 +14,5 @@ https://www.overleaf.com/7337892178znghgjtmvzvs
 
 https://www.overleaf.com/9756941431sxgvqzpmrwdj
 
-## Skip-gram word2vec model: 
-
-http://www.claudiobellei.com/2018/01/06/backprop-word2vec/
-
-![](figs/Skipgram.png)
+## Paper we want work on: 
+- **Centroid-based Text Summarization through Compositionality of Word Embeddings** https://www.aclweb.org/anthology/W17-1003.pdf
