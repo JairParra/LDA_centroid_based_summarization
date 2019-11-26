@@ -3,8 +3,8 @@
 [![Generic badge](https://img.shields.io/badge/COMP550-Natural_Language_Processing-red.svg)](https://shields.io/)
 [![Generic badge](https://img.shields.io/badge/Neat_level-OVER_9000-green.svg)](https://shields.io/)
 
-# COMP 550 Repository 
-- This repository will contain all the different scripts, data, outputs, files, links to literature and anything else that we will be using in the final project. 
+# Improving Centroid-based Text Summarization through LDA-dependant Centroid-based Embeddings 
+- Project for replicating and improving Centroid-based Text Summarization by replacing tfidf-based selection in centroid embedding components by LDA-based topic components. 
 
 ## Project Proposal: 
 
