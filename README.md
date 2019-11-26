@@ -42,3 +42,7 @@ https://www.overleaf.com/9756941431sxgvqzpmrwdj
 ### Rouge: 
 
 ![](figs/ROUGE.jpg)
+
+### Attribution 
+
+Based on the paper *Centroid-based Text Summarization through Compositionality of Word Embeddings*, by Gaetano Rossiello, Pierpaolo Basile and  Giovanni Semeraro. https://github.com/gaetangate/text-summarizer/blob/master/LICENSE
