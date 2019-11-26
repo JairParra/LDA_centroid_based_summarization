@@ -7,6 +7,7 @@
 - **Doc2Vec** https://cs.stanford.edu/~quocle/paragraph_vector.pdf
 - **Latent Dirlichet Allocation** http://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf
 - **Text Summarization Techniques: A Brief Survey** https://arxiv.org/pdf/1707.02268.pdf
+- **GloVe: Global Vectors for Word Representation** https://nlp.stanford.edu/pubs/glove.pdf
 
 
 ## Papers: 
