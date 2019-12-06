@@ -1,0 +1,7 @@
+setuptools
+gensim>=3.6.0
+sklearn
+numpy
+nltk
+unidecode
+flashtext
