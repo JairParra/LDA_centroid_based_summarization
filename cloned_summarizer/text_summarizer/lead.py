@@ -2,7 +2,7 @@
      Author: Gaetano Rossiello
      Email: gaetano.rossiello@uniba.it
 """
-from text_summarizer import base
+import base
 
 
 class LeadSummarizer(base.BaseSummarizer):
