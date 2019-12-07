@@ -26,7 +26,9 @@ import pickle  # used to save the model
 import gensim 
 
 from preprocessor import nltk_preprocessor 
+#from preprocessor import spacy_preprocessor
 
+from operator import itemgetter
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import sent_tokenize
@@ -50,10 +52,6 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     fxn()
     
-
-# English stopwords 
-en_stop = set(nltk.corpus.stopwords.words('english'))
-
     
 ### 3. Command line arguments setting ### 
     
@@ -86,7 +84,7 @@ class LDA_parser():
     
         if preprocessor_type == "nltk": 
             self.preprocessor = nltk_preprocessor(language=language)
-#        if preprocessor_type == "gensim": 
+#        if preprocessor_type == "soacy": 
 #            self.preprocessor = spacy_preprocessor(language=language)
             
         self.language = language # input language 
@@ -94,9 +92,10 @@ class LDA_parser():
         self.clean_corpus = [] # [doc, doc, ..., doc] = [[sent, sent, ...], ... ,[sent, sent, ...]]
         self.dictionary = None # holds a corpora.Dictionary representation of corpus 
         self.doc2bow_corpus = None # contains doc2bow vector representations of each document in the corpus
-        self.lda = None # LDA model trained on the input corpus 
+        self.lda_model = None # LDA model trained on the input corpus 
         self.topic_mixtures = [] # contains str representations of mixtures of words with their probabilities  
-        self.topics = {} # Contains a dictionary of topics once "extract topics" is called.  
+        self.topics = {} # Contains a dictionary of topics with words and respective mix probabilities once "extract topics" is called.
+        self.topic_words = {} # As above, but only contains the respective words of the topic
         
 
         if isinstance(corpus,str): 
@@ -108,23 +107,8 @@ class LDA_parser():
             print("***WARNING***\nNull Corpus") 
         # assume input corpus is in the right format  
         else: 
-            print("Fitting LDA topic modelling...\n")
             self.fit(corpus, language=language, num_topics=num_topics, passes=passes) 
-        
-#        try: 
-#        # Check for raw input corpus (==)
-#
-#                
-#        except Exception as e: 
-#            print("OOPS! Something went wrong, buddy...\n")
-#            print("ARGUMENTS: ", e.args)
-#            print("CAUSE", e.__cause__)
-#            print("CONTEXT: ", e.__context__)    
-#            print("SUPRESS: ", e.__suppress_context__)
-#            print("TRACEBACK", e.__traceback__)
-#            print(e)
-#            
-        return   
+    
             
     
     def fit(self, corpus, language = 'english', num_topics=10, passes = 100, min_len=2):  
@@ -134,160 +118,162 @@ class LDA_parser():
             @ corpus = input corpus  
         """
         
+        print("Fitting LDA topic modelling...\n")
         self.raw_corpus = corpus # input corpus as is 
         self.language = language # in case initial language changed 
+        print("Preprocessing corpus...")
         self.clean_corpus = self.preprocessor.preprocess_texts(self.raw_corpus, min_len=2) # preprocess text list  
+        print("Creating corpora dictionary...")
         self.dictionary = corpora.Dictionary(self.clean_corpus) # create corpora.Dictionary mapping 
-        self.doc2bow_corpus = [dictionary.doc2bow(text) for text in self.clean_corpus] # doc2bow corpus representation 
-        self.lda_model =  LdaModel(self.doc2bow_corpus, num_topics = num_topics , id2word=dictionary, passes=passes) 
+        print("Translating doc2bow corpus...")
+        self.doc2bow_corpus = [self.dictionary.doc2bow(text) for text in self.clean_corpus] # doc2bow corpus representation 
+        print("Running LDA...")
+        self.lda_model =  LdaModel(self.doc2bow_corpus, num_topics = num_topics , id2word=self.dictionary, passes=passes) 
         self.topic_mixtures = self.lda_model.print_topics(num_words=10) # string representation of topics mixtures   
-        
+        print("\nDone.")
+     
         
         
     def print_topics(self, words_per_topic=5): 
         """
         Displays the topics in string format
         """ 
-        topics = ldamodel.print_topics(num_words=words_per_topic) 
+        topics = self.lda_model.print_topics(num_words=words_per_topic) 
         for topic in topics: 
             print(topic) 
         
         
-    def extract_topics(self, words_per_topic = 10, threshold = 0.005): 
+    def extract_topics(self, max_words_per_topic = 50, threshold = 0.005): 
         """
         Returns all topics as a dictionary of tuples, where the key is the topic 
-        number, and the value is a list of words_per_topic many words with highest probability 
-        composing the given
+        number, and the value is a list of tuples of words_per_topic many words with 
+        probability at least as high as threshold, where the second value is the density 
+        for the topic. 
+        @params: 
+            @ max_words_per_topic: Maximum topic mixture component words to consider. 
+            @ threshold: select words whose density is at least this value
         """
         topics = {} # to store the topics 
         num_topics = len(self.topic_mixtures) # we have this many number of topics 
         
         # assign the topics mixtures  
         for i in range(num_topics): 
-            topics[i] = ldamodel.show_topic(i,topn=words_per_topic)  # extract mosst probable words for topic i  
+            topics[i] = [tup for tup in self.lda_model.show_topic(i,topn=max_words_per_topic) if tup[1] >= threshold]  # extract mosst probable words for topic i  
             
         self.topics = topics # update attribute  
         
         return topics 
+    
+    def extract_topic_words(self, max_words_per_topic = 50, threshold = 0.005): 
+        """
+        Returns all topics as a dictionary of tuples, where the key is the topic 
+        number, and the value is a list of words_per_topic many words with 
+        probability at least as high as threshold. 
+        """
+        topics = {} # to store the topics 
+        num_topics = len(self.topic_mixtures) # we have this many number of topics 
+        
+        # assign the topics mixtures  
+        for i in range(num_topics): 
+            topics[i] = [tup[0] for tup in self.lda_model.show_topic(i,topn=max_words_per_topic) if tup[1] >= threshold]  # extract mosst probable words for topic i  
             
-
+        self.topic_words= topics # update attribute  
+        
+        return topics 
     
+    def parse_new(self, new_text, verbose=True): 
+        """
+        Parses a new text by obtaining the most likely topics for the new input, 
+        as well as the respective words. This function should be used only after 
+        the LDA parser has been fitted. 
+        @params: 
+            @ new_text: new input text 
+            @ verbose: display information
+        @returns: 
+            @ max_topic: most likely topic for the document 
+            @ doc_max_topic_words: words associated with the most likely topic 
+            @ doc_topics: all topics related to the document 
+            @ doc_topic_words: all words from all topics associated with the document 
+        """
+        if len(self.topic_words) < 1: 
+            self.extract_topic_words() 
+            
+        new_text_clean = self.preprocessor.preprocess_sentence(new_text)  # preprocess input text
+        new_doc_bow = self.dictionary.doc2bow(new_text_clean)  # convert to doc2bow 
+        doc_topics = self.lda_model.get_document_topics(new_doc_bow) # obtain topics for input document 
+        max_topic = max(doc_topics, key=itemgetter(1)) # most likely topics for the document 
+        topic_idx = [tup[0] for tup in doc_topics] # topic indices 
+        doc_topic_words = [word for idx in topic_idx for word in self.topic_words[idx] ] # extract all words from every topic 
+        doc_max_topic_words = [word for  word in self.topic_words[max_topic[0]] ] # extract max density topic 
+        
+        if verbose: 
+            print("*** Most likely topic: ***\n", max_topic) 
+            print("*** Words for most likely topic: ***\n", doc_max_topic_words) 
+            print("*** All topics: ***\n", doc_topics) 
+            print("*** All topics words: ***\n", doc_topic_words) 
+            
+        return max_topic, doc_max_topic_words, doc_topics, doc_topic_words
+            
+        
     
-
+    def save_model(self, name="LDA_model"):
+        """ 
+        Saves the LDA model, doc2bow_corpus and dictionary.
+        These parameters can be used to instantiate a gensim 
+        model, so there is no load in this class. 
+        """   
+        dictionary_name = name + "_dictionary.gensim"
+        corpus_name = name + "_doc2bow_corpus.pkl"
+        model_name = name + ".gensim"
+        
+        pickle.dump(self.doc2bow_corpus, open(corpus_name,'wb'))  # save the doc2bow_corpus 
+        self.dictionary.save(dictionary_name) # save corpus dictionary mapping
+        self.lda_model.save(model_name)  # save the full model 
         
         
-# 5. TESTS  
         
-PATH = "topic_modelling_dataset.xlsx"
-
-# example df 
-df = pd.read_excel(PATH) # load into a data-frame 
-print(df.head()) 
-print(df.columns)
-
-text_list = list(map(str, list(df['RESULTATS_2018'])))
-
-text_example = """This is sentence number one. 
-                    This is sentence number 2. 
-                    This one is number 3""" 
-                    
-                    
-print(type(text_example))
-print(isinstance(text_example,str))
-
-parser = LDA_parser(text_list, language='french') 
-
-
-### 3. Data Preprocessing ### 
-
-from preprocessor import nltk_preprocessor 
-
-# initialize 
-cleaner = nltk_preprocessor(language='french')
-
-
-# apply cleaning 
-clean_texts = cleaner.preprocess_texts(text_list=text_list,
-                                       lemmatize=False, 
-                                       stem=False, 
-                                       join=False, # generate list of tokens
-                                       min_len=2) 
-
-
-## LDA with Gensim ## 
-
-# pass thte text to the corpora object and create a dictionary object  
-dictionary = corpora.Dictionary(clean_texts) 
-corpus = [dictionary.doc2bow(text) for text in clean_texts] 
-
-## Save the corpus? 
-#pickle.dump(corpus, open('corpus.pkl','wb')) 
-#dictionary.save('dictionary.gensim') 
+## 5. TESTS  
+#        
+#PATH = "topic_modelling_dataset.xlsx"
 #
-
-ldamodel = LdaModel(corpus, num_topics = 10 , 
-                    id2word=dictionary, passes=100) 
-
-
-## save the model?  
-#ldamodel.save('model.gensim')
-
-
-# Get the topics 
-topics = ldamodel.print_topics(num_words=10)
-for topic in topics: 
-    print(topic) 
-    
-
-topic_words = [tup[0] for tup in ldamodel.show_topic(0,topn=10)] 
-print("Example extraction words for a topic:\n", topic_words)
-
-
-
-
-test_text = """C'est très difficile de faire des avances à moins qu'on commence 
-                à facilitier des activités pour des enfants et les familles. Une 
-                activité de plus peut faire la différence dans des projets sociaux. 
-                On a donc besoin de la collaboration des organismes pour obtenir 
-                des meilleurs résultats. """ 
-                
-     
-nlp_fr = spacy.load("fr_core_news_sm")
-doc = nlp_fr(test_text)
-
-
-text_lemmas = cleaner.preprocess_sentence(test_text) # clean text 
-new_doc_bow = dictionary.doc2bow(text_lemmas) # convert to bow dictionary 
-print(ldamodel.get_document_topics(new_doc_bow)) # obtain topics  
-
-
-
-doc_topics = ldamodel.get_document_topics(new_doc_bow) 
-
-from operator import itemgetter
-
-# obtain the maximally related topic 
-max_topic = max(doc_topics, key=itemgetter(1))
-
-
-
-
-                
-                
-
-    
-
-
-
-
- 
-
- 
-
-        
-        
-
-
-
-
+## example df 
+#df = pd.read_excel(PATH) # load into a data-frame 
+#print(df.head()) 
+#print(df.columns)
+#
+#text_list = list(map(str, list(df['RESULTATS_2018'])))
+#
+#
+## Fitting a str type of text  
+#text_example = """This is sentence number one. 
+#                    This is sentence number 2. 
+#                    This one is number 3""" 
+#                    
+#                    
+#print(type(text_example))
+#print(isinstance(text_example,str))
+#
+#
+### Fitting the text list to the parser ###  
+#
+#parser = LDA_parser(text_list, language='french') 
+#
+#
+#parser.print_topics(words_per_topic = 10) 
+#topic_mixtures = parser.extract_topics()
+#print(topic_mixtures)
+#
+## extract topics as a fictionary 
+#topics = parser.extract_topic_words()
+#print(topics)
+#
+#
+#test_text = """C'est très difficile de faire des avances à moins qu'on commence 
+#                à facilitier des activités pour des enfants et les familles. Une 
+#                activité de plus peut faire la différence dans des projets sociaux. 
+#                On a donc besoin de la collaboration des organismes pour obtenir 
+#                des meilleurs résultats. """ 
+#
+## parse a new text using the model 
+#max_topic, doc_max_topic_words, doc_topics, doc_topic_words = parser.parse_new(test_text)
 
