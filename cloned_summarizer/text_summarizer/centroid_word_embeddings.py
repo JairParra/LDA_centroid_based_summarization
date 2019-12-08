@@ -128,7 +128,7 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         for i in range(centroid_vector.shape[0]):  # for every entry in the vector  
             if centroid_vector[i] <= self.topic_threshold: # if entry is not relevant , set it to 0 
                 centroid_vector[i] = 0
-        return tfidf, centroid_vector # return tfidf vector m
+        return tfidf, centroid_vector # return tfidf vector and the centroid vector from the tfidf vectors 
 
     def get_topic_idf(self, sentences):
         """
@@ -189,8 +189,12 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         return composed_vector
 
     def summarize(self, text, limit_type='word', limit=100):
-        raw_sentences = self.sent_tokenize(text)
-        clean_sentences = self.preprocess_text(text)
+        """ 
+        Main function for text summarization using word2vec embeddings. 
+        The idea is similar to the previous , but more extense. 
+        """
+        raw_sentences = self.sent_tokenize(text) # tokenize by sentences
+        clean_sentences = self.preprocess_text(text)  # preprocess sentences with model's prepreocessor (nltk or regex)
 
         if self.debug:
             print("ORIGINAL TEXT STATS = {0} chars, {1} words, {2} sentences".format(len(text),
@@ -203,33 +207,33 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
             for i, s in enumerate(clean_sentences):
                 print(i, s)
 
-        centroid_words = self.get_topic_idf(clean_sentences)
+        centroid_words = self.get_topic_idf(clean_sentences) # obtain all word whose tfidf id more than topic_threshold
 
         if self.debug:
             print("*** CENTROID WORDS ***")
             print(len(centroid_words), centroid_words)
 
-        self.word_vectors_cache(clean_sentences)
-        centroid_vector = self.compose_vectors(centroid_words)
+        self.word_vectors_cache(clean_sentences)  # obtain word representations from the model embeddings  
+        centroid_vector = self.compose_vectors(centroid_words) # obtain centroid vector from the centroid word embeddings 
 
-        tfidf, centroid_bow = self.get_bow(clean_sentences)
-        max_length = get_max_length(clean_sentences)
+        tfidf, centroid_bow = self.get_bow(clean_sentences) # obtain tfidf vectors ebmeddings and the resulting tfidf vector 
+        max_length = get_max_length(clean_sentences) # max lenght of the clean sentences  
 
-        sentences_scores = []
-        for i in range(len(clean_sentences)):
+        sentences_scores = [] # to store the scores  
+        for i in range(len(clean_sentences)): # for each sentence in clean sentences 
             scores = []
-            words = clean_sentences[i].split()
-            sentence_vector = self.compose_vectors(words)
+            words = clean_sentences[i].split()  # obtain agggregates words 
+            sentence_vector = self.compose_vectors(words) # obtain the sentence embedding representation 
 
-            scores.append(base.similarity(sentence_vector, centroid_vector))
-            scores.append(self.bow_param * base.similarity(tfidf[i, :], centroid_bow))
-            scores.append(self.length_param * (1 - (len(words) / max_length)))
-            scores.append(self.position_param * (1 / (i + 1)))
-
-            score = average_score(scores)
+            scores.append(base.similarity(sentence_vector, centroid_vector)) # obtain similarity between sentence and centroid
+            scores.append(self.bow_param * base.similarity(tfidf[i, :], centroid_bow)) # obtain similarity score of the ith tfidf word vector and centroid 
+            scores.append(self.length_param * (1 - (len(words) / max_length))) # score for the length and complement ration of the numer of words and sentence max lentgth
+            scores.append(self.position_param * (1 / (i + 1)))  # score for relative position of the sentence (position matters in relevance)
+ 
+            score = average_score(scores) # average over all the scores obtained 
             # score = stanford_cerainty_factor(scores)
 
-            sentences_scores.append((i, raw_sentences[i], score, sentence_vector))
+            sentences_scores.append((i, raw_sentences[i], score, sentence_vector))  # (index, sentence i, avg score, sentence vector)
 
             if self.debug:
                 print(i, scores, score)
