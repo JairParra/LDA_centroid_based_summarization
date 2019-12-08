@@ -74,7 +74,11 @@ class LDA_parser():
         @ params: 
             @ corpus: Input corpus in str or ['str','str','str', ... ] format, where each entry
                       is a document of type str. Alternatively, a str format input (not recommended).
-            @ preprocess: Removes 
+            @ preprocessor_type: Use nltk-based or spaCy-base preprocessor 
+            @ lemmatize: use lemmatization in the preprocessing 
+            @ stem: use stemming in the preprocessing  
+            @ num_topics: maximum number of topics in the LDA algorithm 
+            @ passes: number of training epochs in the LDA 
         """
         
         print("Initializing model...\n")
@@ -111,11 +115,15 @@ class LDA_parser():
     
             
     
-    def fit(self, corpus, language = 'english', num_topics=10, passes = 100, min_len=2):  
+    def fit(self, corpus, language = 'english', min_len=2, num_topics=10, passes = 100):  
         """ 
         Assumes input corpus is in the right format. 
         @args: 
             @ corpus = input corpus  
+            @ language = input language  
+            @ num_topics = number of topics to choose in the algorithm 
+            @ passes = number of epochs of the LDA 
+            @ min_len = minimum length of words to consider when preprocessing words
         """
         
         print("Fitting LDA topic modelling...")
@@ -231,38 +239,48 @@ class LDA_parser():
         self.lda_model.save(model_name)  # save the full model 
         
         
+# *********************************************************************************
         
-# 5. TESTS  
+#        
+## TESTS # 
+#        
+#PATH = "topic_modelling_dataset.xlsx"
+#
+## example df 
+#df = pd.read_excel(PATH) # load into a data-frame 
+#print(df.head()) 
+#print(df.columns)
+#
+#text_list = list(map(str, list(df['RESULTATS_2018'])))
+#
+### Fitting the text list to the parser ###  
+#
+#parser = LDA_parser(text_list, 
+#                    language='french', 
+#                    preprocessor_type='spacy', 
+#                    min_len = 2, 
+#                    num_topics = 10, 
+#                    passes = 100) 
+#
+#
+#parser.print_topics(words_per_topic = 10) 
+#topic_mixtures = parser.extract_topics(max_words_per_topic=50, threshold=0.005)
+#print(topic_mixtures)
+#
+## extract topics as a fictionary 
+#topics = parser.extract_topic_words(max_words_per_topic=50, threshold=0.005)
+#print(topics)
+#
+#
+#test_text = """C'est très difficile de faire des avances à moins qu'on commence 
+#                à facilitier des activités pour des enfants et les familles. Une 
+#                activité de plus peut faire la différence dans des projets sociaux. 
+#                On a donc besoin de la collaboration des organismes pour obtenir 
+#                des meilleurs résultats. """ 
+#
+## parse a new text using the model 
+#max_topic, doc_max_topic_words, doc_topics, doc_topic_words = parser.parse_new(test_text)
         
-PATH = "topic_modelling_dataset.xlsx"
+# *********************************************************************************
 
-# example df 
-df = pd.read_excel(PATH) # load into a data-frame 
-print(df.head()) 
-print(df.columns)
-
-text_list = list(map(str, list(df['RESULTATS_2018'])))
-
-## Fitting the text list to the parser ###  
-
-parser = LDA_parser(text_list, language='french', preprocessor_type='spacy') 
-
-
-parser.print_topics(words_per_topic = 10) 
-topic_mixtures = parser.extract_topics(max_words_per_topic=50, threshold=0.005)
-print(topic_mixtures)
-
-# extract topics as a fictionary 
-topics = parser.extract_topic_words(max_words_per_topic=50, threshold=0.005)
-print(topics)
-
-
-test_text = """C'est très difficile de faire des avances à moins qu'on commence 
-                à facilitier des activités pour des enfants et les familles. Une 
-                activité de plus peut faire la différence dans des projets sociaux. 
-                On a donc besoin de la collaboration des organismes pour obtenir 
-                des meilleurs résultats. """ 
-
-# parse a new text using the model 
-max_topic, doc_max_topic_words, doc_topics, doc_topic_words = parser.parse_new(test_text)
 

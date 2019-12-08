@@ -210,7 +210,7 @@ class spacy_preprocessor():
                             sentence, 
                             tags = ["DET","PUNCT","NUM","SYM","SPACE"], 
                             stem=False, 
-                            lemmatize=True, 
+                            lemmatize=False, 
                             join=False, 
                             min_len=1): 
         """
