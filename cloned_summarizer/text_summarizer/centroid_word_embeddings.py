@@ -120,36 +120,46 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         sent_word_matrix = vectorizer.fit_transform(sentences)# create mapping of sentences  
 
         transformer = TfidfTransformer(norm=None, sublinear_tf=False, smooth_idf=False) # instantiate tfidf weighting  
-        tfidf = transformer.fit_transform(sent_word_matrix)
-        tfidf = tfidf.toarray()
+        tfidf = transformer.fit_transform(sent_word_matrix) # fit tfidf weighting to the counts matrix 
+        tfidf = tfidf.toarray() # convert to dense ndarray
 
-        centroid_vector = tfidf.sum(0)
-        centroid_vector = np.divide(centroid_vector, centroid_vector.max())
-        for i in range(centroid_vector.shape[0]):
-            if centroid_vector[i] <= self.topic_threshold:
+        centroid_vector = tfidf.sum(0) # sum of all tfidf vectors to create the centroid  (axis=0)
+        centroid_vector = np.divide(centroid_vector, centroid_vector.max()) # normalization  
+        for i in range(centroid_vector.shape[0]):  # for every entry in the vector  
+            if centroid_vector[i] <= self.topic_threshold: # if entry is not relevant , set it to 0 
                 centroid_vector[i] = 0
-        return tfidf, centroid_vector
+        return tfidf, centroid_vector # return tfidf vector m
 
     def get_topic_idf(self, sentences):
-        vectorizer = CountVectorizer()
-        sent_word_matrix = vectorizer.fit_transform(sentences)
+        """
+        Extracts all the words from the centroid based on the input sentences, whenever their 
+        aggregated tfidf is more thatn a certain topic threshold. 
+        """
+        
+        vectorizer = CountVectorizer() # instantiate COuntVectorizer object 
+        sent_word_matrix = vectorizer.fit_transform(sentences) # fit the input sentences 
 
-        transformer = TfidfTransformer(norm=None, sublinear_tf=False, smooth_idf=False)
-        tfidf = transformer.fit_transform(sent_word_matrix)
-        tfidf = tfidf.toarray()
+        transformer = TfidfTransformer(norm=None, sublinear_tf=False, smooth_idf=False) # instantiate tfidf weighting  
+        tfidf = transformer.fit_transform(sent_word_matrix) # fit the BOW representation of matrix 
+        tfidf = tfidf.toarray() # convert to array 
 
-        centroid_vector = tfidf.sum(0)
-        centroid_vector = np.divide(centroid_vector, centroid_vector.max())
+        centroid_vector = tfidf.sum(0)  # sum all vectors into one 
+        centroid_vector = np.divide(centroid_vector, centroid_vector.max())  # normalize 
         # print(centroid_vector.max())
 
-        feature_names = vectorizer.get_feature_names()
+        feature_names = vectorizer.get_feature_names() # obtain vocaulary list  
 
-        relevant_vector_indices = np.where(centroid_vector > self.topic_threshold)[0]
+        # extract words whose tfidf has relevance based on the topic_threshold parameter
+        relevant_vector_indices = np.where(centroid_vector > self.topic_threshold)[0] 
 
-        word_list = list(np.array(feature_names)[relevant_vector_indices])
+        word_list = list(np.array(feature_names)[relevant_vector_indices]) # obtain a list of such words
         return word_list
 
     def word_vectors_cache(self, sentences):
+        """  
+        Fills the word_vectors attribute of the class by obtaining the respective vectors 
+        from the word embedding model or a centered version of it using self.centroid_space 
+        """
         self.word_vectors = dict()
         for s in sentences: # for each sentence 
             words = s.split()  # split by word s
@@ -163,15 +173,19 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
 
     # Sentence representation with sum of word vectors
     def compose_vectors(self, words):
-        composed_vector = np.zeros(self.embedding_model.vector_size, dtype="float32")
-        word_vectors_keys = set(self.word_vectors.keys())
+        """ 
+        This function obtains the sentence representation of the input words  
+        by aggregating their vector representations and composing them. 
+        """
+        composed_vector = np.zeros(self.embedding_model.vector_size, dtype="float32") # initialize vector of zeros 
+        word_vectors_keys = set(self.word_vectors.keys()) # 
         count = 0
         for w in words:
-            if w in word_vectors_keys:
-                composed_vector = composed_vector + self.word_vectors[w]
+            if w in word_vectors_keys: # for each word in the vectors of the model 
+                composed_vector = composed_vector + self.word_vectors[w] # add the word vector to the overall vector
                 count += 1
         if count != 0:
-            composed_vector = np.divide(composed_vector, count)
+            composed_vector = np.divide(composed_vector, count) # normalize 
         return composed_vector
 
     def summarize(self, text, limit_type='word', limit=100):
