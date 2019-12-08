@@ -238,7 +238,7 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
             if self.debug:
                 print(i, scores, score)
 
-        sentence_scores_sort = sorted(sentences_scores, key=lambda el: el[2], reverse=True)
+        sentence_scores_sort = sorted(sentences_scores, key=lambda el: el[2], reverse=True) # sort the sentences by their relative score 
         if self.debug:
             print("*** SENTENCE SCORES ***")
             for s in sentence_scores_sort:
@@ -247,7 +247,7 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         count = 0
         sentences_summary = []
 
-        if self.keep_first:
+        if self.keep_first: # fi we want to keep the first sentence 
             for s in sentence_scores_sort:
                 if s[0] == 0:
                     sentences_summary.append(s)
@@ -258,27 +258,27 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
                     sentence_scores_sort.remove(s)
                     break
 
-        for s in sentence_scores_sort:
-            if count > limit:
+        for s in sentence_scores_sort: # for each sentence in sorted sentences 
+            if count > limit: # if the count exceeeds limit, break the algorihtm 
                 break
             include_flag = True
-            for ps in sentences_summary:
-                sim = base.similarity(s[3], ps[3])
+            for ps in sentences_summary: # for every other sentence 
+                sim = base.similarity(s[3], ps[3])  #somare how similar they are 
                 # print(s[0], ps[0], sim)
-                if sim > self.sim_threshold:
-                    include_flag = False
+                if sim > self.sim_threshold:  # if too similar 
+                    include_flag = False  # don't include
             if include_flag:
                 # print(s[0], s[1])
-                sentences_summary.append(s)
-                if limit_type == 'word':
-                    count += len(s[1].split())
+                sentences_summary.append(s) # append 
+                if limit_type == 'word': # decide limit by word or by sentence 
+                    count += len(s[1].split() 
                 else:
                     count += len(s[1])
 
-        if self.reordering:
+        if self.reordering: # reorderby sorting 
             sentences_summary = sorted(sentences_summary, key=lambda el: el[0], reverse=False)
 
-        summary = "\n".join([s[1] for s in sentences_summary])
+        summary = "\n".join([s[1] for s in sentences_summary]) # obtain summary by joinin the sentences  
 
         if self.debug:
             print("SUMMARY TEXT STATS = {0} chars, {1} words, {2} sentences".format(len(summary),
