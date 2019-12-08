@@ -13,7 +13,6 @@ import bs4 as BeautifulSoup # to do some basic web cleaning
 import urllib.request  
 
 
-#
 #print(common_texts[0:2]) # all of these texts are pre-processed?  
 
 

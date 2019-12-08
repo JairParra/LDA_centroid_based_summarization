@@ -11,7 +11,6 @@ for encapsulation and practicality purposes.
 
 ### 1. Imports ### 
 
-import re 
 import os
 import sys
 import time
@@ -126,6 +125,7 @@ class LDA_parser():
             @ min_len = minimum length of words to consider when preprocessing words
         """
         
+        t0= time.time() 
         print("Fitting LDA topic modelling...")
         self.raw_corpus = corpus # input corpus as is 
         self.language = language # in case initial language changed 
@@ -137,8 +137,10 @@ class LDA_parser():
         self.doc2bow_corpus = [self.dictionary.doc2bow(text) for text in self.clean_corpus] # doc2bow corpus representation 
         print("Running LDA...")
         self.lda_model =  LdaModel(self.doc2bow_corpus, num_topics = num_topics , id2word=self.dictionary, passes=passes) 
-        self.topic_mixtures = self.lda_model.print_topics(num_words=10) # string representation of topics mixtures   
-        print("\nDone.")
+        self.topic_mixtures = self.lda_model.print_topics(num_words=10) # string representation of topics mixtures  
+        t1 = time.time() 
+        print("\nDone in {:.3f} seconds.".format(t1-t0))
+        
      
         
         
@@ -166,7 +168,8 @@ class LDA_parser():
         
         # assign the topics mixtures  
         for i in range(num_topics): 
-            topics[i] = [tup for tup in self.lda_model.show_topic(i,topn=max_words_per_topic) if tup[1] >= threshold]  # extract mosst probable words for topic i  
+            topics[i] = [tup for tup in tqdm(self.lda_model.show_topic(i,topn=max_words_per_topic), desc='Extracting topic...')
+                        if tup[1] >= threshold]  # extract mosst probable words for topic i  
             
         self.topics = topics # update attribute  
         
@@ -183,7 +186,8 @@ class LDA_parser():
         
         # assign the topics mixtures  
         for i in range(num_topics): 
-            topics[i] = [tup[0] for tup in self.lda_model.show_topic(i,topn=max_words_per_topic) if tup[1] >= threshold]  # extract mosst probable words for topic i  
+            topics[i] = [tup[0] for tup in tqdm(self.lda_model.show_topic(i,topn=max_words_per_topic), desc="Extracting topic words...")
+                        if tup[1] >= threshold]  # extract mosst probable words for topic i  
             
         self.topic_words= topics # update attribute  
         
@@ -282,5 +286,3 @@ class LDA_parser():
 #max_topic, doc_max_topic_words, doc_topics, doc_topic_words = parser.parse_new(test_text)
         
 # *********************************************************************************
-
-

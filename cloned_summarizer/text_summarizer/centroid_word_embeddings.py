@@ -9,7 +9,7 @@ Email: gaetano.rossiello@uniba.it
 import base
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from gensim.models import KeyedVectors
+from gensim.models import KeyedVectors  # Used to load the pre-trained word embeddings 
 import gensim.downloader as gensim_data_downloader
 
 
@@ -48,6 +48,9 @@ def get_max_length(sentences):
 
 
 def load_gensim_embedding_model(model_name):
+    """ 
+    Function to load and select the word embeddings model, using the Gensim lirbary. 
+    """
     available_models = gensim_data_downloader.info()['models'].keys()
     assert model_name in available_models, 'Invalid model_name: {}. Choose one from {}'.format(model_name, ', '.join(available_models))
     model_path = gensim_data_downloader.load(model_name, return_path=True)
@@ -55,35 +58,52 @@ def load_gensim_embedding_model(model_name):
 
 
 class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
+    """
+    Extends the previous BaseSummarizer class which contains basic 
+    fitting attributes and preprocessing methods.  
+    This class implements the summarize function 
+    Word embeddings are obtained through Gensim, instead of BOW vectors (i.e. CountVectorizer methods)
+    """ 
+    
     def __init__(self,
-                 embedding_model,
-                 language='english',
+                 embedding_model, # word embeddings 
+                 language='english',  
                  preprocess_type='nltk',
-                 stopwords_remove=True,
-                 length_limit=10,
+                 stopwords_remove=True, 
+                 length_limit=10, # min length limit for sentences when sent_tokenizing in preprocessing step 
                  debug=False,
                  topic_threshold=0.3,
-                 sim_threshold=0.95,
-                 reordering=True,
-                 zero_center_embeddings=False,
-                 keep_first=False,
-                 bow_param=0,
+                 sim_threshold=0.95, 
+                 reordering=True,  
+                 zero_center_embeddings=False, # re-center embeddings to have zero cetner  
+                 keep_first=False, # ??? 
+                 bow_param=0, 
                  length_param=0,
                  position_param=0):
+        """ 
+        This is the Centroid method based on word2vec embedding representations.
+        
+        @attributes: 
+            @ self.topic_threshold: Select "meaningful" words in the document to form the centroid 
+              embeddings, which have a tfidf score greater than topic threshold. 
+            @ self.sim_threshold: Discard sentences that are too similar to avoid redundancy 
+        """
+        
+        # initalize base parent class with preprocessing parameters 
         super().__init__(language, preprocess_type, stopwords_remove, length_limit, debug)
 
-        self.embedding_model = embedding_model
+        self.embedding_model = embedding_model  # input word embedding modele 
 
-        self.word_vectors = dict()
+        self.word_vectors = dict() # initialize dictionary to store word vectors 
 
-        self.topic_threshold = topic_threshold
-        self.sim_threshold = sim_threshold
+        self.topic_threshold = topic_threshold  # select words with tfidf score greater than threshold to compose the centroid
+        self.sim_threshold = sim_threshold # avoid sentences that are too similar 
         self.reordering = reordering
 
         self.keep_first = keep_first
-        self.bow_param = bow_param
-        self.length_param = length_param
-        self.position_param = position_param
+        self.bow_param = bow_param # ??? 
+        self.length_param = length_param # ??? 
+        self.position_param = position_param # ??? 
 
         self.zero_center_embeddings = zero_center_embeddings
 
@@ -92,10 +112,14 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         return
 
     def get_bow(self, sentences):
-        vectorizer = CountVectorizer()
-        sent_word_matrix = vectorizer.fit_transform(sentences)
+        """ 
+        Obtain a BOW vector representation of the input sentences. 
+        It uses the eaxact same technique as the cnetroid_bow class. 
+        """
+        vectorizer = CountVectorizer() # instantiate CountVectorizer object 
+        sent_word_matrix = vectorizer.fit_transform(sentences)# create mapping of sentences  
 
-        transformer = TfidfTransformer(norm=None, sublinear_tf=False, smooth_idf=False)
+        transformer = TfidfTransformer(norm=None, sublinear_tf=False, smooth_idf=False) # instantiate tfidf weighting  
         tfidf = transformer.fit_transform(sent_word_matrix)
         tfidf = tfidf.toarray()
 
@@ -127,12 +151,12 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
 
     def word_vectors_cache(self, sentences):
         self.word_vectors = dict()
-        for s in sentences:
-            words = s.split()
-            for w in words:
-                if self.word_vectors.get(w) is not None:
-                    if self.zero_center_embeddings:
-                        self.word_vectors[w] = (self.embedding_model[w] - self.centroid_space)
+        for s in sentences: # for each sentence 
+            words = s.split()  # split by word s
+            for w in words: # for each word  
+                if self.word_vectors.get(w) is not None: # if the vector for that word exists
+                    if self.zero_center_embeddings: # if zero center embeddings acivated 
+                        self.word_vectors[w] = (self.embedding_model[w] - self.centroid_space) # replace
                     else:
                         self.word_vectors[w] = self.embedding_model[w]
         return
@@ -251,10 +275,10 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
     def _zero_center_embedding_coordinates(self):
         # Create the centroid vector of the whole vector space
         count = 0
-        self.centroid_space = np.zeros(self.embedding_model.vector_size, dtype="float32")
-        self.index2word_set = set(self.embedding_model.wv.index2word)
-        for w in self.index2word_set:
-            self.centroid_space = self.centroid_space + self.embedding_model[w]
-            count += 1
-        if count != 0:
-            self.centroid_space = np.divide(self.centroid_space, count)
+        self.centroid_space = np.zeros(self.embedding_model.vector_size, dtype="float32") #create a vector of zeros 
+        self.index2word_set = set(self.embedding_model.wv.index2word) # class model's vectors index2word unique mapping 
+        for w in self.index2word_set: # for every word in this mapping  
+            self.centroid_space = self.centroid_space + self.embedding_model[w] # add the vector from the model's embedding 
+            count += 1 # increment count 
+        if count != 0: 
+            self.centroid_space = np.divide(self.centroid_space, count) # normalize 

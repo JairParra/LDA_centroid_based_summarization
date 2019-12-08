@@ -14,6 +14,7 @@ from gensim.summarization.textcleaner import split_sentences as gensim_sent_toke
 import flashtext
 
 
+# cosine similariity for two vectors 
 def similarity(v1, v2):
     score = 0.0
     if np.count_nonzero(v1) != 0 and np.count_nonzero(v2) != 0:
@@ -22,6 +23,11 @@ def similarity(v1, v2):
 
 
 class BaseSummarizer:
+    """
+    Constitues the base clas which include basic initialization, sentence tokenizing 
+    and text-preprocessing methods. It also contains the "summarize" signature, 
+    unimplemented. 
+    """
 
     extra_stopwords = ["''", "``", "'s"]
 
@@ -35,7 +41,7 @@ class BaseSummarizer:
         self.preprocess_type = preprocess_type
         self.stopwords_remove = stopwords_remove
         self.length_limit = length_limit
-        self.debug = debug
+        self.debug = debug # what is this attribute for? 
         if stopwords_remove:
             stopword_remover = flashtext.KeywordProcessor()
             for stopword in stopwords.words(self.language):
@@ -48,9 +54,9 @@ class BaseSummarizer:
             sents = nltk_sent_tokenize(text, self.language)
         else:
             sents = gensim_sent_tokenize(text)
-        sents_filtered = []
+        sents_filtered = [] # to store the sentences
         for s in sents:
-            if s[-1] != ':' and len(s) > self.length_limit:
+            if s[-1] != ':' and len(s) > self.length_limit:  # append sentence if it has a minimum character length
                 sents_filtered.append(s)
             # else:
             #   print("REMOVED!!!!" + s)
