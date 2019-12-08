@@ -17,26 +17,15 @@ import sys
 import time
 import argparse  
 import warnings 
-import pandas as pd 
-import numpy as np 
-
-import nltk
-import spacy
 import pickle  # used to save the model 
-import gensim 
-
-from preprocessor import nltk_preprocessor 
-#from preprocessor import spacy_preprocessor
+import pandas as pd
 
 from operator import itemgetter
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.tokenize import sent_tokenize
-from nltk.stem import WordNetLemmatizer
-from nltk.stem.snowball import SnowballStemmer
+from preprocessor import nltk_preprocessor 
+from preprocessor import spacy_preprocessor
+
 from gensim import corpora 
 from gensim.models.ldamodel import LdaModel  
-
 
 from tqdm import tqdm
 from langdetect import detect
@@ -71,7 +60,13 @@ with warnings.catch_warnings():
     
 class LDA_parser(): 
     
-    def __init__(self, corpus='', language='english', preprocessor_type = "nltk", num_topics=10, passes=100): 
+    def __init__(self, corpus='', 
+                 language='english', 
+                 preprocessor_type = "spacy", 
+                 lemmatize = False, 
+                 stem = False, 
+                 num_topics=10, 
+                 passes=100): 
         """ 
         Parses the input text into a suitable format, then performs all LDA extraction tasks. 
         It expects the input corpus to be a list of texts. If input is a long string, it will attempt 
@@ -81,11 +76,14 @@ class LDA_parser():
                       is a document of type str. Alternatively, a str format input (not recommended).
             @ preprocess: Removes 
         """
-    
+        
+        print("Initializing model...\n")
         if preprocessor_type == "nltk": 
+            print("NLTK preprocessor selected.")
             self.preprocessor = nltk_preprocessor(language=language)
-#        if preprocessor_type == "soacy": 
-#            self.preprocessor = spacy_preprocessor(language=language)
+        if preprocessor_type == "spacy": 
+            print("spaCy preprocessor selected.")
+            self.preprocessor = spacy_preprocessor(language=language)
             
         self.language = language # input language 
         self.raw_corpus = "" # simply stores the input if in str type 
@@ -102,7 +100,9 @@ class LDA_parser():
             print("***WARNING***\nRaw input (str) received. Text will be sentence-tokenized and parsed accordingly.")
             print("Make sure this is intended. \n")
             self.raw_corpus = str(corpus) 
-            self.clean_corpus = self.preprocessor.preprocess_str_corpus(corpus)
+            self.clean_corpus = self.preprocessor.preprocess_str_corpus(corpus,
+                                                                        stem=stem, 
+                                                                        lemmatize=lemmatize)
         elif corpus == '': 
             print("***WARNING***\nNull Corpus") 
         # assume input corpus is in the right format  
@@ -118,7 +118,7 @@ class LDA_parser():
             @ corpus = input corpus  
         """
         
-        print("Fitting LDA topic modelling...\n")
+        print("Fitting LDA topic modelling...")
         self.raw_corpus = corpus # input corpus as is 
         self.language = language # in case initial language changed 
         print("Preprocessing corpus...")
@@ -232,48 +232,37 @@ class LDA_parser():
         
         
         
-## 5. TESTS  
-#        
-#PATH = "topic_modelling_dataset.xlsx"
-#
-## example df 
-#df = pd.read_excel(PATH) # load into a data-frame 
-#print(df.head()) 
-#print(df.columns)
-#
-#text_list = list(map(str, list(df['RESULTATS_2018'])))
-#
-#
-## Fitting a str type of text  
-#text_example = """This is sentence number one. 
-#                    This is sentence number 2. 
-#                    This one is number 3""" 
-#                    
-#                    
-#print(type(text_example))
-#print(isinstance(text_example,str))
-#
-#
-### Fitting the text list to the parser ###  
-#
-#parser = LDA_parser(text_list, language='french') 
-#
-#
-#parser.print_topics(words_per_topic = 10) 
-#topic_mixtures = parser.extract_topics()
-#print(topic_mixtures)
-#
-## extract topics as a fictionary 
-#topics = parser.extract_topic_words()
-#print(topics)
-#
-#
-#test_text = """C'est très difficile de faire des avances à moins qu'on commence 
-#                à facilitier des activités pour des enfants et les familles. Une 
-#                activité de plus peut faire la différence dans des projets sociaux. 
-#                On a donc besoin de la collaboration des organismes pour obtenir 
-#                des meilleurs résultats. """ 
-#
-## parse a new text using the model 
-#max_topic, doc_max_topic_words, doc_topics, doc_topic_words = parser.parse_new(test_text)
+# 5. TESTS  
+        
+PATH = "topic_modelling_dataset.xlsx"
+
+# example df 
+df = pd.read_excel(PATH) # load into a data-frame 
+print(df.head()) 
+print(df.columns)
+
+text_list = list(map(str, list(df['RESULTATS_2018'])))
+
+## Fitting the text list to the parser ###  
+
+parser = LDA_parser(text_list, language='french', preprocessor_type='spacy') 
+
+
+parser.print_topics(words_per_topic = 10) 
+topic_mixtures = parser.extract_topics(max_words_per_topic=50, threshold=0.005)
+print(topic_mixtures)
+
+# extract topics as a fictionary 
+topics = parser.extract_topic_words(max_words_per_topic=50, threshold=0.005)
+print(topics)
+
+
+test_text = """C'est très difficile de faire des avances à moins qu'on commence 
+                à facilitier des activités pour des enfants et les familles. Une 
+                activité de plus peut faire la différence dans des projets sociaux. 
+                On a donc besoin de la collaboration des organismes pour obtenir 
+                des meilleurs résultats. """ 
+
+# parse a new text using the model 
+max_topic, doc_max_topic_words, doc_topics, doc_topic_words = parser.parse_new(test_text)
 
