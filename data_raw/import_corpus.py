@@ -1,4 +1,5 @@
 import os
+import pickle
 
 # Find list of all article ids
 article_set_ids = os.listdir('articles')
@@ -52,6 +53,8 @@ for set_id in article_set_ids:
         summary_file.close()
         corpus[set_id]['summaries'].append(summary_text)
 
-t = corpus['30001']['articles']
+# Save corpus to pickle file
+with open('corpus.pkl', 'wb') as output_file:
+    pickle.dump(corpus, output_file, pickle.HIGHEST_PROTOCOL)
         
 
