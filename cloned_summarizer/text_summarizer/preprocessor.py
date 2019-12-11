@@ -208,7 +208,7 @@ class spacy_preprocessor():
     
     def preprocess_sentence(self, 
                             sentence, 
-                            tags = ["DET","PUNCT","NUM","SYM","SPACE"], 
+                            tags = ["DET","PUNCT","NUM","SYM","SPACE"],  # "PRON"
                             stem=False, 
                             lemmatize=False, 
                             join=False, 

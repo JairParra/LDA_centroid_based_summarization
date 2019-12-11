@@ -245,44 +245,43 @@ class LDA_parser():
         
 # *********************************************************************************
         
-#        
-## TESTS # 
-#        
-#PATH = "topic_modelling_dataset.xlsx"
-#
-## example df 
-#df = pd.read_excel(PATH) # load into a data-frame 
-#print(df.head()) 
-#print(df.columns)
-#
-#text_list = list(map(str, list(df['RESULTATS_2018'])))
-#
-### Fitting the text list to the parser ###  
-#
-#parser = LDA_parser(text_list, 
-#                    language='french', 
-#                    preprocessor_type='spacy', 
-#                    min_len = 2, 
-#                    num_topics = 10, 
-#                    passes = 100) 
-#
-#
-#parser.print_topics(words_per_topic = 10) 
-#topic_mixtures = parser.extract_topics(max_words_per_topic=50, threshold=0.005)
-#print(topic_mixtures)
-#
-## extract topics as a fictionary 
-#topics = parser.extract_topic_words(max_words_per_topic=50, threshold=0.005)
-#print(topics)
-#
-#
-#test_text = """C'est très difficile de faire des avances à moins qu'on commence 
-#                à facilitier des activités pour des enfants et les familles. Une 
-#                activité de plus peut faire la différence dans des projets sociaux. 
-#                On a donc besoin de la collaboration des organismes pour obtenir 
-#                des meilleurs résultats. """ 
-#
-## parse a new text using the model 
-#max_topic, doc_max_topic_words, doc_topics, doc_topic_words = parser.parse_new(test_text)
         
-# *********************************************************************************
+# TESTS # 
+        
+PATH = "topic_modelling_dataset.xlsx"
+   
+# example df 
+df = pd.read_excel(PATH) # load into a data-frame 
+print(df.head()) 
+print(df.columns)
+
+text_list = list(map(str, list(df['RESULTATS_2018'])))
+
+## Fitting the text list to the parser ###  
+
+parser = LDA_parser(text_list, 
+                    language='french', 
+                    preprocessor_type='spacy', 
+                    num_topics = 10, 
+                    passes = 100) 
+
+
+parser.print_topics(words_per_topic = 10) 
+topic_mixtures = parser.extract_topics(max_words_per_topic=50, threshold=0.005)
+print(topic_mixtures)
+
+# extract topics as a fictionary 
+topics = parser.extract_topic_words(max_words_per_topic=50, threshold=0.005)
+print(topics)
+
+
+test_text = """C'est très difficile de faire des avances à moins qu'on commence 
+                à facilitier des activités pour des enfants et les familles. Une 
+                activité de plus peut faire la différence dans des projets sociaux. 
+                On a donc besoin de la collaboration des organismes pour obtenir 
+                des meilleurs résultats. """ 
+
+# parse a new text using the model 
+max_topic, doc_max_topic_words, doc_topics, doc_topic_words = parser.parse_new(test_text)
+        
+ *********************************************************************************
