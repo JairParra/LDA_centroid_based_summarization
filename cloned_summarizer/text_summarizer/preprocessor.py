@@ -9,7 +9,7 @@ Preprocessor class for the LDA_parser class.
 
 
 import re
-import spacy 
+# import spacy 
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import sent_tokenize
@@ -135,11 +135,11 @@ class nltk_preprocessor():
    
 # ****************************************************************************** # 
 
-
+"""
 class spacy_preprocessor(): 
 
     def __init__(self, language='english', language_model='md'): 
-        """ 
+        "#"" 
         Sets up a preprocessor according to input language.  
         Please make sure the respective language models. 
         Example languages: 
@@ -159,7 +159,7 @@ class spacy_preprocessor():
             @ stemmer = nltk Snowball stemmer  
             @ lemmatizer = nltk lemmatizer 
             @ stopwords =  stopwords list from input language
-        """
+        "#""
         
         # Set preprocessor parameter according to the input language 
         # Set medium model by default if not specified. 
@@ -213,7 +213,7 @@ class spacy_preprocessor():
                             lemmatize=False, 
                             join=False, 
                             min_len=1): 
-        """
+        "#""
         Cleans text list by applying the following steps: 
             1. Tokenize the input sentence 
             2. Remove punctuation, symbols and unwanted characters
@@ -233,7 +233,7 @@ class spacy_preprocessor():
         @returns: 
             @ a list of clean tokens if join==false 
             @ the cleaned sentence as a string separates by spaces 
-        """
+        "#""
         
         doc = self.nlp(sentence) # fit sentence to language model 
         
@@ -274,7 +274,7 @@ class spacy_preprocessor():
                             lemmatize=False, 
                             join=False, 
                             min_len=1): 
-        """
+        "#""
         @params: 
             @ sentence: input sentence in str format 
             @ tags: filters tokens with POS_tags in input tags list
@@ -288,7 +288,7 @@ class spacy_preprocessor():
             @ list of list of clean tokens if join== False 
             @ list of clean sentences if join == True
             
-        """
+        "#""
         
         processed = [] 
         # apply preprocessing to sentence in the input text list, 
@@ -345,7 +345,7 @@ class spacy_preprocessor():
                             lemmatize=False, 
                             join=False, 
                             min_len=1):  
-        """
+        "#""
         Input text is a long string. The parser will attempt to split by sentence, 
         and the process these sentences accordingly. 
             
@@ -356,11 +356,11 @@ class spacy_preprocessor():
             @ join: if True, return the processed sentence as a str, 
                     else, return a list of processed tokens.
             @ min_len: minimum length of a token to be considered 
-        """       
+        "#""       
         
         documents = self.sent_tokenizer(str_corpus) # tokenize by sentences, result is a list. 
         return self.preprocess_texts(documents, stem=stem, lemmatize=lemmatize, join=join, min_len=min_len)  
-        
+"""
    
     
     

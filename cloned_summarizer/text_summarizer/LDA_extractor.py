@@ -21,7 +21,7 @@ import pandas as pd
 
 from operator import itemgetter
 from preprocessor import nltk_preprocessor 
-from preprocessor import spacy_preprocessor
+#from preprocessor import spacy_preprocessor
 
 from gensim import corpora 
 from gensim.models.ldamodel import LdaModel  
@@ -61,7 +61,7 @@ class LDA_parser():
     
     def __init__(self, corpus='', 
                  language='english', 
-                 preprocessor_type = "spacy", 
+                 preprocessor_type = "nltk", 
                  lemmatize = False, 
                  stem = False, 
                  num_topics=10, 
@@ -84,9 +84,9 @@ class LDA_parser():
         if preprocessor_type == "nltk": 
             print("NLTK preprocessor selected.")
             self.preprocessor = nltk_preprocessor(language=language)
-        if preprocessor_type == "spacy": 
-            print("spaCy preprocessor selected.")
-            self.preprocessor = spacy_preprocessor(language=language)
+        #if preprocessor_type == "spacy": 
+        #    print("spaCy preprocessor selected.")
+        #    self.preprocessor = spacy_preprocessor(language=language)
             
         self.language = language # input language 
         self.raw_corpus = "" # simply stores the input if in str type 
@@ -260,8 +260,8 @@ text_list = list(map(str, list(df['RESULTATS_2018'])))
 ## Fitting the text list to the parser ###  
 
 parser = LDA_parser(text_list, 
-                    language='french', 
-                    preprocessor_type='spacy', 
+                    language='english', 
+                    preprocessor_type='nltk', 
                     num_topics = 10, 
                     passes = 100) 
 
@@ -284,4 +284,3 @@ test_text = """C'est très difficile de faire des avances à moins qu'on commenc
 # parse a new text using the model 
 max_topic, doc_max_topic_words, doc_topics, doc_topic_words = parser.parse_new(test_text)
         
- *********************************************************************************
