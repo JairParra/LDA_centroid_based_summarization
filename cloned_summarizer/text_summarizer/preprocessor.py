@@ -10,6 +10,7 @@ Preprocessor class for the LDA_parser class.
 
 import re
 import spacy 
+from tqdm import tqdm 
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import sent_tokenize
@@ -44,6 +45,7 @@ class nltk_preprocessor():
 
     def preprocess_sentence(self, 
                             sentence, 
+                            custom_filter = [], 
                             stem=False, 
                             lemmatize=False, 
                             join=False, 
@@ -58,6 +60,7 @@ class nltk_preprocessor():
             
         @params: 
             @ sentence: input sentence in str format 
+            @ custom_filter: exclude a specific list of words  
             @ stem: use nltk stemmer on the tokens 
             @ lemmatize: use nltk lemmatizer on the tokens 
             @ join: if True, return the processed sentence as a str, 
@@ -70,7 +73,7 @@ class nltk_preprocessor():
         # Remove punctuation, numbers & symbols
         tokens = [re.sub(r"[^a-zA-Z]","", token) for token in tokens ]
         
-        # convert to lowercase 
+        # convert to lowercase
         tokens = [token.lower() for token in tokens]
         
         # Stem or lemmatize
@@ -80,7 +83,9 @@ class nltk_preprocessor():
             tokens = [self.lemmatizer.lemmatize(token) for token in tokens] 
         
         # remove stopwords and empty strings 
-        tokens = [token for token in tokens if token not in self.stopwords
+        tokens = [token for token in tokens if token 
+                  not in self.stopwords
+                  and token not in custom_filter
                   and len(token) >= min_len] 
         
         if join: 
@@ -91,6 +96,7 @@ class nltk_preprocessor():
     
     def preprocess_texts(self,
                          text_list, 
+                         custom_filter = [], 
                          stem=False, 
                          lemmatize=False, 
                          join=False, 
@@ -100,18 +106,20 @@ class nltk_preprocessor():
         
         @params: 
             @ text_list: input list of texts 
+            @ custom_filter: exclude a specific list of words  
             @ stem: use nltk stemmer on the tokens 
             @ lemmatize: use nltk lemmatizer on the tokens 
             @ join: if True, return the processed sentence as a str, 
                     else, return a list of processed tokens. 
         """ 
-        return [self.preprocess_sentence(text, stem=stem, lemmatize=lemmatize,
+        return [self.preprocess_sentence(text, custom_filter=custom_filter, stem=stem, lemmatize=lemmatize,
                                          join=join, min_len=min_len) for text in text_list] 
             
     
     
     def preprocess_str_corpus(self, 
                             str_corpus, 
+                            custom_filter = [], 
                             stem=False, 
                             lemmatize=False, 
                             join=False, 
@@ -130,11 +138,10 @@ class nltk_preprocessor():
         """       
         
         documents = self.sent_tokenizer(str_corpus) # tokenize by sentences, result is a list. 
-        return self.preprocess_texts(documents, stem=stem, lemmatize=lemmatize, join=join, min_len=min_len)  
+        return self.preprocess_texts(documents, custom_filter=custom_filter, stem=stem, lemmatize=lemmatize, join=join, min_len=min_len)  
         
    
 # ****************************************************************************** # 
-
 
 class spacy_preprocessor(): 
 
@@ -208,7 +215,8 @@ class spacy_preprocessor():
     
     def preprocess_sentence(self, 
                             sentence, 
-                            tags = ["DET","PUNCT","NUM","SYM","SPACE"],  # "PRON"
+                            tags = ["DET","PUNCT","NUM","SYM","SPACE"],
+                            custom_filter = [], 
                             stem=False, 
                             lemmatize=False, 
                             join=False, 
@@ -224,6 +232,7 @@ class spacy_preprocessor():
         @params: 
             @ sentence: input sentence in str format 
             @ tags: filters tokens with POS_tags in input tags list
+            @ custom_filter:  a list of custom words to exclude 
             @ stem: use nltk stemmer on the tokens 
             @ lemmatize: recovers lemmas using spacy's language model 
             @ join: if True, return the processed sentence as a str, 
@@ -243,6 +252,7 @@ class spacy_preprocessor():
             tokens = [self.stemmer.stem(token.text.lower()) for token in doc 
                       if token.text.isalpha() 
                       and token.text not in self.stopwords 
+                      and token.text not in custom_filter
                       and token.pos_ not in tags 
                       and len(token.text) >= min_len ]
             
@@ -250,6 +260,7 @@ class spacy_preprocessor():
             tokens = [token.lemma_.lower() for token in doc 
                       if token.text.isalpha() 
                       and token.text not in self.stopwords 
+                      and token.text not in custom_filter
                       and token.pos_ not in tags 
                       and len(token.text) >= min_len ]   
             
@@ -257,6 +268,7 @@ class spacy_preprocessor():
             tokens = [token.text.lower() for token in doc 
                       if token.text.isalpha() 
                       and token.text not in self.stopwords 
+                      and token.text not in custom_filter
                       and token.pos_ not in tags 
                       and len(token.text) >= min_len ]  
             
@@ -270,6 +282,7 @@ class spacy_preprocessor():
     def preprocess_texts(self, 
                             text_list, 
                             tags = ["DET","PUNCT","NUM","SYM","SPACE"], 
+                            custom_filter = [], 
                             stem=False, 
                             lemmatize=False, 
                             join=False, 
@@ -300,18 +313,21 @@ class spacy_preprocessor():
                 processed = [ " ".join([self.stemmer.stem(token.text.lower()) for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
+                              and token.text not in custom_filter
                               and token.pos_ not in tags 
                               and len(token.text) >= min_len ]) for doc in self.nlp.pipe(text_list) ] 
             elif lemmatize: 
                 processed = [ " ".join([token.lemma_.lower() for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
+                              and token.text not in custom_filter
                               and token.pos_ not in tags 
                               and len(token.text) >= min_len ]) for doc in self.nlp.pipe(text_list) ] 
             else: 
                 processed = [ " ".join([token.text.lower() for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
+                              and token.text not in custom_filter
                               and token.pos_ not in tags 
                               and len(token.text) >= min_len ]) for doc in self.nlp.pipe(text_list) ] 
                 
@@ -321,18 +337,21 @@ class spacy_preprocessor():
                 processed = [ [self.stemmer.stem(token.text.lower()) for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
+                              and token.text not in custom_filter
                               and token.pos_ not in tags 
                               and len(token.text) >= min_len ] for doc in self.nlp.pipe(text_list) ]
             elif lemmatize: 
                 processed = [ [token.lemma_.lower() for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
+                              and token.text not in custom_filter
                               and token.pos_ not in tags 
                               and len(token.text) >= min_len ] for doc in self.nlp.pipe(text_list) ]
             else: 
                 processed = [ [token.text.lower() for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
+                              and token.text not in custom_filter
                               and token.pos_ not in tags 
                               and len(token.text) >= min_len ] for doc in self.nlp.pipe(text_list) ]    
         
@@ -341,6 +360,8 @@ class spacy_preprocessor():
     
     def preprocess_str_corpus(self, 
                             str_corpus, 
+                            tags = ["DET","PUNCT","NUM","SYM","SPACE"], 
+                            custom_filter = [], 
                             stem=False, 
                             lemmatize=False, 
                             join=False, 
@@ -359,7 +380,13 @@ class spacy_preprocessor():
         """       
         
         documents = self.sent_tokenizer(str_corpus) # tokenize by sentences, result is a list. 
-        return self.preprocess_texts(documents, stem=stem, lemmatize=lemmatize, join=join, min_len=min_len)  
+        return self.preprocess_texts(documents, 
+                                     tags=tags, 
+                                     custom_filter=custom_filter, 
+                                     stem=stem, 
+                                     lemmatize=lemmatize, 
+                                     join=join,
+                                     min_len=min_len)  
         
    
     
