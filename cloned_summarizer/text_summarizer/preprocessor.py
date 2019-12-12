@@ -329,27 +329,26 @@ class spacy_preprocessor():
         if join: 
             # make each processed sentence one string
             if stem: 
-                processed = [ " ".join([re.sub(regex_pattern,"",self.stemmer.stem(token.text.lower()) for token in doc 
+                processed = [ " ".join([re.sub(regex_pattern,"",self.stemmer.stem(token.text.lower())) for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
                               and token.text not in custom_filter
                               and token.pos_ not in tags 
-                              and len(token.text) >= min_len ]) for doc in self.nlp.pipe(text_list) ] 
+                              and len(token.text) >= min_len ]) for doc in self.nlp.pipe(text_list) ]
             elif lemmatize: 
                 processed = [ " ".join([re.sub(regex_pattern,"",token.lemma_.lower()) for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
                               and token.text not in custom_filter
                               and token.pos_ not in tags 
-                              and len(token.text) >= min_len ]) for doc in self.nlp.pipe(text_list) ] 
+                              and len(token.text) >= min_len ]) for doc in self.nlp.pipe(text_list) ]
             else: 
                 processed = [ " ".join([re.sub(regex_pattern,"",token.text.lower()) for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
                               and token.text not in custom_filter
                               and token.pos_ not in tags 
-                              and len(token.text) >= min_len ]) for doc in self.nlp.pipe(text_list) ] 
-                
+                              and len(token.text) >= min_len ]) for doc in self.nlp.pipe(text_list) ]                   
         else: 
             # list of lists of clean tokens
             if stem: 
@@ -413,4 +412,5 @@ class spacy_preprocessor():
                                      lemmatize=lemmatize, 
                                      join=join,
                                      min_len=min_len)  
+        
     

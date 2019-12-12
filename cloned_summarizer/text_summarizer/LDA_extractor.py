@@ -342,4 +342,3 @@ if __name__ == "__main__":
 #        parser2 = pickle.load(model)
 #
 #    parser2.parse_new(test_text) 
-
