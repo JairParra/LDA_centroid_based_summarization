@@ -145,7 +145,7 @@ class LDA_parser():
         self.doc2bow_corpus = [self.dictionary.doc2bow(text) for text in self.clean_corpus] # doc2bow corpus representation 
         print("Running LDA...")
         self.lda_model =  LdaModel(self.doc2bow_corpus, num_topics = num_topics , id2word=self.dictionary, passes=passes) 
-        self.topic_mixtures = parser.lda_model.show_topics(num_topics = -1, num_words=10) # string representation of topics mixtures  
+        self.topic_mixtures = self.lda_model.show_topics(num_topics = -1, num_words=10) # string representation of topics mixtures  
         t1 = time.time() 
         print("\nDone in {:.3f} seconds.".format(t1-t0))
              
@@ -228,7 +228,9 @@ class LDA_parser():
         
         doc_topic_words = [word for idx in topic_idx for word in self.topic_words[idx] ] # extract all words from every topic
         top_n_topics = nlargest(top_n, list(doc_topics), key = lambda x:x[1]) # extract top n topics 
+        
         top_n_words = list(set([word for idx in [tup[0] for tup in top_n_topics] for word in self.topic_words[idx]])) # extrac the word for the topc words
+        
         
 #        max_topic = max(doc_topics, key=itemgetter(1)) # most likely topics for the document 
 #        max_topic_words = [word for  word in self.topic_words[max_topic[0]] ] # extract max density topic 

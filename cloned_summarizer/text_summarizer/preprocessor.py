@@ -215,8 +215,10 @@ class spacy_preprocessor():
     
     def preprocess_sentence(self, 
                             sentence, 
-                            tags = ["DET","PUNCT","NUM","SYM","SPACE"],
+                            tags = ["DET","NUM","SYM","SPACE"], 
+                            regex_pattern = '', 
                             custom_filter = [], 
+                            remove_punct = True, 
                             stem=False, 
                             lemmatize=False, 
                             join=False, 
@@ -229,9 +231,13 @@ class spacy_preprocessor():
             4. Stem or lemmatize (according to input)
             5. Remove stopwords and empty strings
             
+        NOTE: If want to preserve some punctuation, disable "PUNCT" into the filter list 
+            and employ a regex expression instead. 
+            
         @params: 
             @ sentence: input sentence in str format 
             @ tags: filters tokens with POS_tags in input tags list
+            @ regex_pattern: filter this regex pattern in words 
             @ custom_filter:  a list of custom words to exclude 
             @ stem: use nltk stemmer on the tokens 
             @ lemmatize: recovers lemmas using spacy's language model 
@@ -244,12 +250,15 @@ class spacy_preprocessor():
             @ the cleaned sentence as a string separates by spaces 
         """
         
+        if remove_punct: 
+            tags += ['PUNCT'] # add the punctuation tag to filter
+            
         doc = self.nlp(sentence) # fit sentence to language model 
         
         # Tokenize, lowercase, filter numbers, stopwords, 
         # input POS_tags and tokens with length < min_len. 
         if stem: 
-            tokens = [self.stemmer.stem(token.text.lower()) for token in doc 
+            tokens = [re.sub(regex_pattern,"",self.stemmer.stem(token.text.lower())) for token in doc 
                       if token.text.isalpha() 
                       and token.text not in self.stopwords 
                       and token.text not in custom_filter
@@ -257,7 +266,7 @@ class spacy_preprocessor():
                       and len(token.text) >= min_len ]
             
         elif lemmatize: 
-            tokens = [token.lemma_.lower() for token in doc 
+            tokens = [re.sub(regex_pattern,"",token.lemma_.lower()) for token in doc 
                       if token.text.isalpha() 
                       and token.text not in self.stopwords 
                       and token.text not in custom_filter
@@ -265,7 +274,7 @@ class spacy_preprocessor():
                       and len(token.text) >= min_len ]   
             
         else: 
-            tokens = [token.text.lower() for token in doc 
+            tokens = [re.sub(regex_pattern,"",token.text.lower()) for token in doc 
                       if token.text.isalpha() 
                       and token.text not in self.stopwords 
                       and token.text not in custom_filter
@@ -281,8 +290,10 @@ class spacy_preprocessor():
     
     def preprocess_texts(self, 
                             text_list, 
-                            tags = ["DET","PUNCT","NUM","SYM","SPACE"], 
+                            tags = ["DET","NUM","SYM","SPACE"], 
                             custom_filter = [], 
+                            remove_punct = True, 
+                            regex_pattern = '', 
                             stem=False, 
                             lemmatize=False, 
                             join=False, 
@@ -291,17 +302,25 @@ class spacy_preprocessor():
         @params: 
             @ sentence: input sentence in str format 
             @ tags: filters tokens with POS_tags in input tags list
+            @ regex_pattern: 
+            @ remove_puntc: filter punctuation
             @ stem: use nltk stemmer on the tokens 
             @ lemmatize: recovers lemmas using spacy's language model 
             @ join: if True, return the processed sentence as a str, 
                     else, return a list of processed tokens.
             @ min_len: minimum length of a token to be considered 
             
+        NOTE: If want to preserve some punctuation, disable "PUNCT" into the filter list 
+            and employ a regex expression instead. 
+            
         @returns: 
             @ list of list of clean tokens if join== False 
             @ list of clean sentences if join == True
             
         """
+        
+        if remove_punct: 
+            tags += ['PUNCT'] # add the punctuation tag to filter
         
         processed = [] 
         # apply preprocessing to sentence in the input text list, 
@@ -310,21 +329,21 @@ class spacy_preprocessor():
         if join: 
             # make each processed sentence one string
             if stem: 
-                processed = [ " ".join([self.stemmer.stem(token.text.lower()) for token in doc 
+                processed = [ " ".join([re.sub(regex_pattern,"",self.stemmer.stem(token.text.lower()) for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
                               and token.text not in custom_filter
                               and token.pos_ not in tags 
                               and len(token.text) >= min_len ]) for doc in self.nlp.pipe(text_list) ] 
             elif lemmatize: 
-                processed = [ " ".join([token.lemma_.lower() for token in doc 
+                processed = [ " ".join([re.sub(regex_pattern,"",token.lemma_.lower()) for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
                               and token.text not in custom_filter
                               and token.pos_ not in tags 
                               and len(token.text) >= min_len ]) for doc in self.nlp.pipe(text_list) ] 
             else: 
-                processed = [ " ".join([token.text.lower() for token in doc 
+                processed = [ " ".join([re.sub(regex_pattern,"",token.text.lower()) for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
                               and token.text not in custom_filter
@@ -334,21 +353,21 @@ class spacy_preprocessor():
         else: 
             # list of lists of clean tokens
             if stem: 
-                processed = [ [self.stemmer.stem(token.text.lower()) for token in doc 
+                processed = [ [re.sub(regex_pattern,"",self.stemmer.stem(token.text.lower())) for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
                               and token.text not in custom_filter
                               and token.pos_ not in tags 
                               and len(token.text) >= min_len ] for doc in self.nlp.pipe(text_list) ]
             elif lemmatize: 
-                processed = [ [token.lemma_.lower() for token in doc 
+                processed = [ [re.sub(regex_pattern,"",token.lemma_.lower()) for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
                               and token.text not in custom_filter
                               and token.pos_ not in tags 
                               and len(token.text) >= min_len ] for doc in self.nlp.pipe(text_list) ]
             else: 
-                processed = [ [token.text.lower() for token in doc 
+                processed = [ [re.sub(regex_pattern,"",token.text.lower()) for token in doc 
                               if token.text.isalpha() 
                               and token.text not in self.stopwords 
                               and token.text not in custom_filter
@@ -362,6 +381,8 @@ class spacy_preprocessor():
                             str_corpus, 
                             tags = ["DET","PUNCT","NUM","SYM","SPACE"], 
                             custom_filter = [], 
+                            remove_punct = True, 
+                            regex_pattern='', 
                             stem=False, 
                             lemmatize=False, 
                             join=False, 
@@ -379,15 +400,17 @@ class spacy_preprocessor():
             @ min_len: minimum length of a token to be considered 
         """       
         
+        if remove_punct: 
+            tags += ['PUNCT'] # add the punctuation tag to filter
+        
         documents = self.sent_tokenizer(str_corpus) # tokenize by sentences, result is a list. 
         return self.preprocess_texts(documents, 
                                      tags=tags, 
                                      custom_filter=custom_filter, 
+                                     remove_punct = remove_punct, 
+                                     regex_pattern=regex_pattern, 
                                      stem=stem, 
                                      lemmatize=lemmatize, 
                                      join=join,
                                      min_len=min_len)  
-        
-   
-    
     
