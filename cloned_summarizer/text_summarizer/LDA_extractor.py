@@ -200,13 +200,15 @@ class LDA_parser():
         
         return topics 
     
-    def parse_new(self, new_text, top_n=100, max_words_per_topic = 50, threshold= 0.005, verbose=True): 
+    def parse_new(self, new_text, top_n_topics=100, top_n_w=30, max_words_per_topic = 50, threshold= 0.005, verbose=True): 
         """
         Parses a new text by obtaining the most likely topics for the new input, 
         as well as the respective words. This function should be used only after 
         the LDA parser has been fitted. 
         @params: 
             @ new_text: new input text 
+            @ top_n_topics: top n topics with larges densities  p(topic)
+            @ top_n_w: top n word with largest densities p(word) = p(word|topic)*p(topic)
             @ verbose: display information
             @ max_words_per_topic: maximum words per topic  
             @ thrshold: only consider words with density greater than threshold 
@@ -227,13 +229,25 @@ class LDA_parser():
         
         
         doc_topic_words = [word for idx in topic_idx for word in self.topic_words[idx] ] # extract all words from every topic
-        top_n_topics = nlargest(top_n, list(doc_topics), key = lambda x:x[1]) # extract top n topics 
+        top_n_topics = nlargest(top_n_topics, list(doc_topics), key = lambda x:x[1]) # extract top n topics 
         
         top_n_words = list(set([word for idx in [tup[0] for tup in top_n_topics] for word in self.topic_words[idx]])) # extrac the word for the topc words
         
+        # Currently, we have access to the top n topics and their actual probabilities.  
+        # We want to collect all the words for those topics, and multiply them with their probabilities 
         
-#        max_topic = max(doc_topics, key=itemgetter(1)) # most likely topics for the document 
-#        max_topic_words = [word for  word in self.topic_words[max_topic[0]] ] # extract max density topic 
+        words_with_probs = [] # will store words with their actual probabilities: 
+    
+        for topic_tup in doc_topics: 
+            topic_idx = topic_tup[0] # obtain topic index 
+            topic_prob = topic_tup[1]  # obtain topic probability p(topic)
+            for word_tup in self.lda_model.show_topic(topic_idx, topn=10): 
+                word_probability = word_tup[1] * topic_prob # p(w) = p(w|topic)p(topic) 
+                words_with_probs.append( (word_tup[0], word_probability) ) # (word, p(w)) 
+                
+        # obtain the n most likely words according to they individual probabilities 
+        n_most_likely_words = [tup[0] for tup in nlargest(top_n_w, list(words_with_probs), key = lambda x:x[1])]        
+        
         
         if verbose: 
             print("LOGS: \n")
@@ -242,7 +256,7 @@ class LDA_parser():
             print("*** All topics: ***\n", doc_topics) 
             print("*** All topics words: ***\n", doc_topic_words) 
             
-        return top_n_topics, top_n_words, doc_topics, doc_topic_words
+        return n_most_likely_words, top_n_topics, top_n_words, doc_topics, doc_topic_words  
     
     
     def pickle_save(self, savename="full_LDA_parser.pkl"): 
@@ -288,11 +302,10 @@ if __name__ == "__main__":
     parser = LDA_parser(text_list, 
                         language='french', 
                         preprocessor_type='spacy', 
-                        num_topics = 100, # NOTE: CURRENT THRESHOLD IS 20, IT WILL CRASH AFTER 
+                        num_topics = 100, 
                         passes = 100, 
                         min_len=2  # min len of words to be considered 
                         ) 
-    
     
     
     
@@ -303,12 +316,14 @@ if __name__ == "__main__":
 #    len( parser.lda_model.print_topics(num_words=10))
     
 
-    
+    # see what the topics look like 
     parser.print_topics(words_per_topic = 10) 
+    
+    # obtain the topic mixtures filtered, in list format 
     topic_mixtures = parser.extract_topics(max_words_per_topic=10, threshold=0.005)
     print(topic_mixtures)
     
-    # extract topics as a fictionary d
+    # extract topic words for ecach topic as a dictionary 
     topics = parser.extract_topic_words(max_words_per_topic=10, threshold=0.005)
     print(topics)
     
@@ -320,18 +335,29 @@ if __name__ == "__main__":
                     des meilleurs résultats. """ 
     
     # parse a new text using the model 1
-    top_n_topics, top_n_words, doc_topics, doc_topic_words = parser.parse_new(test_text, top_n=2) 
+    n_most_likely_words, top_n_topics, top_n_words, doc_topics, doc_topic_words = parser.parse_new(test_text, 
+                                                                                                   top_n_topics=100, 
+                                                                                                   top_n_w=30, # top n words 
+                                                                                                   max_words_per_topic = 50, 
+                                                                                                   threshold= 0.005,
+                                                                                                   verbose=True) 
     
     # The previous function obtains the top_n_topics and top_n_words as per user input 
     print("Top n topics: \n", top_n_topics) 
     print("Word for the top n topics: \n", top_n_words)
     
     
+    
     # tests on the indices and other
     print(parser.topic_mixtures)
     print(len(parser.topic_mixtures))
-    indices = [idx[0] for idx in parser.topic_mixtures]
-    print(sorted(indices))
+    
+    # display the n most likely words according to their actual densities 
+    print("Most likely words: \n", n_most_likely_words)
+    print(len(n_most_likely_words))
+    
+        
+        
     
 
     # save the shit 
