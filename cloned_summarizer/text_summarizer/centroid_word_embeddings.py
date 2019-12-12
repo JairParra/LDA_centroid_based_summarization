@@ -11,7 +11,7 @@ import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from gensim.models import KeyedVectors  # Used to load the pre-trained word embeddings 
 import gensim.downloader as gensim_data_downloader
-
+import random
 
 def average_score(scores):
     score = 0
@@ -73,7 +73,7 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
                  length_limit=10, # min length limit for sentences when sent_tokenizing in preprocessing step 
                  debug=False,
                  topic_threshold=0.3,
-                 sim_threshold=0.95, 
+                 sim_threshold=0.93, 
                  reordering=True,  
                  zero_center_embeddings=False, # re-center embeddings to have zero cetner  
                  keep_first=False, # ??? 
@@ -94,7 +94,8 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         super().__init__(language, preprocess_type, stopwords_remove, length_limit, debug)
 
         self.embedding_model = embedding_model  # input word embedding modele 
-
+        #print(self.embedding_model['said'])
+        self.vector_model = self.embedding_model.wv
         self.word_vectors = dict() # initialize dictionary to store word vectors 
 
         self.topic_threshold = topic_threshold  # select words with tfidf score greater than threshold to compose the centroid
@@ -138,7 +139,7 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         aggregated tfidf is more thatn a certain topic threshold. 
         """
         max_topic, doc_max_topic_words, doc_topics, doc_topic_words = self.parser.parse_new(' '.join(sentences), verbose = False)
-        print(max_topic)
+        #print(max_topic)
         
         #vectorizer = CountVectorizer() # instantiate COuntVectorizer object 
         #sent_word_matrix = vectorizer.fit_transform(sentences) # fit the input sentences 
@@ -168,16 +169,19 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         self.word_vectors = dict()
         for s in sentences: # for each sentence 
             words = s.split()  # split by word s
-            for w in words: # for each word  
-                if self.word_vectors.get(w) is not None: # if the vector for that word exists
+            for w in words: # for each word
+                if w in self.vector_model.vocab: # if the vector for that word exists
                     if self.zero_center_embeddings: # if zero center embeddings acivated 
                         self.word_vectors[w] = (self.embedding_model[w] - self.centroid_space) # replace
                     else:
+                        #print(w)
                         self.word_vectors[w] = self.embedding_model[w]
+        #print("Final cache:")
+        #print(self.word_vectors.keys())
         return
 
     # Sentence representation with sum of word vectors
-    def compose_vectors(self, words):
+    def compose_vectors(self, words, debug=False):
         """ 
         This function obtains the sentence representation of the input words  
         by aggregating their vector representations and composing them. 
@@ -185,8 +189,12 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         composed_vector = np.zeros(self.embedding_model.vector_size, dtype="float32") # initialize vector of zeros 
         word_vectors_keys = set(self.word_vectors.keys()) # 
         count = 0
+        #print('word vector keys')
+        #print(word_vectors_keys)
         for w in words:
             if w in word_vectors_keys: # for each word in the vectors of the model 
+                #print("a")
+                #print(self.word_vectors[w])
                 composed_vector = composed_vector + self.word_vectors[w] # add the word vector to the overall vector
                 count += 1
         if count != 0:
@@ -213,13 +221,14 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
                 print(i, s)
 
         centroid_words = self.get_topic_idf(clean_sentences) # obtain all word whose tfidf id more than topic_threshold
-
+        #print(centroid_words)
+        
         if self.debug:
             print("*** CENTROID WORDS ***")
             print(len(centroid_words), centroid_words)
 
         self.word_vectors_cache(clean_sentences)  # obtain word representations from the model embeddings  
-        centroid_vector = self.compose_vectors(centroid_words) # obtain centroid vector from the centroid word embeddings 
+        centroid_vector = self.compose_vectors(centroid_words, debug=True) # obtain centroid vector from the centroid word embeddings 
 
         tfidf, centroid_bow = self.get_bow(clean_sentences) # obtain tfidf vectors ebmeddings and the resulting tfidf vector 
         max_length = get_max_length(clean_sentences) # max lenght of the clean sentences  
@@ -234,10 +243,9 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
             scores.append(self.bow_param * base.similarity(tfidf[i, :], centroid_bow)) # obtain similarity score of the ith tfidf word vector and centroid 
             scores.append(self.length_param * (1 - (len(words) / max_length))) # score for the length and complement ration of the numer of words and sentence max lentgth
             scores.append(self.position_param * (1 / (i + 1)))  # score for relative position of the sentence (position matters in relevance)
- 
             score = average_score(scores) # average over all the scores obtained 
             # score = stanford_cerainty_factor(scores)
-
+            
             sentences_scores.append((i, raw_sentences[i], score, sentence_vector))  # (index, sentence i, avg score, sentence vector)
 
             if self.debug:
