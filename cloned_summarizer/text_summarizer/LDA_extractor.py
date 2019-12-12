@@ -122,7 +122,7 @@ class LDA_parser():
     
             
     
-    def fit(self, corpus, language = 'english', min_len=2, num_topics=10, passes = 100):  
+    def fit(self, corpus, language = 'english', num_topics=10, passes = 100, min_len=2):  
         """ 
         Assumes input corpus is in the right format. 
         @args: 
@@ -145,7 +145,7 @@ class LDA_parser():
         self.doc2bow_corpus = [self.dictionary.doc2bow(text) for text in self.clean_corpus] # doc2bow corpus representation 
         print("Running LDA...")
         self.lda_model =  LdaModel(self.doc2bow_corpus, num_topics = num_topics , id2word=self.dictionary, passes=passes) 
-        self.topic_mixtures = self.lda_model.print_topics(num_words=10) # string representation of topics mixtures  
+        self.topic_mixtures = parser.lda_model.show_topics(num_topics = -1, num_words=10) # string representation of topics mixtures  
         t1 = time.time() 
         print("\nDone in {:.3f} seconds.".format(t1-t0))
              
@@ -189,7 +189,6 @@ class LDA_parser():
         """
         topics = {} # to store the topics 
         indexes = [tup[0] for tup in self.topic_mixtures] # indexes of the thing 
-        print("INDEXES: ", indexes)
 
         
         # assign the topics mixtures  
@@ -226,9 +225,6 @@ class LDA_parser():
         doc_topics = self.lda_model.get_document_topics(new_doc_bow) # obtain topics for input document 
         topic_idx = [tup[0] for tup in doc_topics] # topic indices 
         
-        print("doc_topics : \n", doc_topics) 
-        print("topix_idx: \n", topic_idx)
-        print("self.topic_words.keys() = {}".format(self.topic_words.keys()))
         
         doc_topic_words = [word for idx in topic_idx for word in self.topic_words[idx] ] # extract all words from every topic
         top_n_topics = nlargest(top_n, list(doc_topics), key = lambda x:x[1]) # extract top n topics 
@@ -290,17 +286,27 @@ if __name__ == "__main__":
     parser = LDA_parser(text_list, 
                         language='french', 
                         preprocessor_type='spacy', 
-                        num_topics = 20, # NOTE: CURRENT THRESHOLD IS 20, IT WILL CRASH AFTER 
+                        num_topics = 100, # NOTE: CURRENT THRESHOLD IS 20, IT WILL CRASH AFTER 
                         passes = 100, 
                         min_len=2  # min len of words to be considered 
                         ) 
     
     
+    
+    
+#    parser.lda_model.show_topics(num_topics = -1, num_words=10)
+#    len(parser.lda_model.show_topics(num_topics = -1, num_words=10))
+#    
+#    parser.lda_model.print_topics(num_words=10)
+#    len( parser.lda_model.print_topics(num_words=10))
+    
+
+    
     parser.print_topics(words_per_topic = 10) 
     topic_mixtures = parser.extract_topics(max_words_per_topic=10, threshold=0.005)
     print(topic_mixtures)
     
-    # extract topics as a fictionary 
+    # extract topics as a fictionary d
     topics = parser.extract_topic_words(max_words_per_topic=10, threshold=0.005)
     print(topics)
     
@@ -318,6 +324,8 @@ if __name__ == "__main__":
     print("Top n topics: \n", top_n_topics) 
     print("Word for the top n topics: \n", top_n_words)
     
+    
+    # tests on the indices and other
     print(parser.topic_mixtures)
     print(len(parser.topic_mixtures))
     indices = [idx[0] for idx in parser.topic_mixtures]
