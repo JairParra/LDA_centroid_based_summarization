@@ -79,7 +79,8 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
                  keep_first=False, # ??? 
                  bow_param=0, 
                  length_param=0,
-                 position_param=0):
+                 position_param=0,
+                 parser = None):
         """ 
         This is the Centroid method based on word2vec embedding representations.
         
@@ -103,7 +104,8 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         self.keep_first = keep_first
         self.bow_param = bow_param # ??? 
         self.length_param = length_param # ??? 
-        self.position_param = position_param # ??? 
+        self.position_param = position_param # ???
+        self.parser = parser
 
         self.zero_center_embeddings = zero_center_embeddings
 
@@ -135,25 +137,28 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         Extracts all the words from the centroid based on the input sentences, whenever their 
         aggregated tfidf is more thatn a certain topic threshold. 
         """
+        max_topic, doc_max_topic_words, doc_topics, doc_topic_words = self.parser.parse_new(' '.join(sentences), verbose = False)
+        print(max_topic)
         
-        vectorizer = CountVectorizer() # instantiate COuntVectorizer object 
-        sent_word_matrix = vectorizer.fit_transform(sentences) # fit the input sentences 
+        #vectorizer = CountVectorizer() # instantiate COuntVectorizer object 
+        #sent_word_matrix = vectorizer.fit_transform(sentences) # fit the input sentences 
 
-        transformer = TfidfTransformer(norm=None, sublinear_tf=False, smooth_idf=False) # instantiate tfidf weighting  
-        tfidf = transformer.fit_transform(sent_word_matrix) # fit the BOW representation of matrix 
-        tfidf = tfidf.toarray() # convert to array 
+        #transformer = TfidfTransformer(norm=None, sublinear_tf=False, smooth_idf=False) # instantiate tfidf weighting  
+        #tfidf = transformer.fit_transform(sent_word_matrix) # fit the BOW representation of matrix 
+        #tfidf = tfidf.toarray() # convert to array 
 
-        centroid_vector = tfidf.sum(0)  # sum all vectors into one 
-        centroid_vector = np.divide(centroid_vector, centroid_vector.max())  # normalize 
+        #centroid_vector = tfidf.sum(0)  # sum all vectors into one 
+        #centroid_vector = np.divide(centroid_vector, centroid_vector.max())  # normalize 
         # print(centroid_vector.max())
 
-        feature_names = vectorizer.get_feature_names() # obtain vocaulary list  
+        #feature_names = vectorizer.get_feature_names() # obtain vocaulary list  
 
         # extract words whose tfidf has relevance based on the topic_threshold parameter
-        relevant_vector_indices = np.where(centroid_vector > self.topic_threshold)[0] 
+        #relevant_vector_indices = np.where(centroid_vector > self.topic_threshold)[0] 
 
-        word_list = list(np.array(feature_names)[relevant_vector_indices]) # obtain a list of such words
-        return word_list
+        #word_list = list(np.array(feature_names)[relevant_vector_indices]) # obtain a list of such words
+
+        return doc_max_topic_words
 
     def word_vectors_cache(self, sentences):
         """  
@@ -271,7 +276,7 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
                 # print(s[0], s[1])
                 sentences_summary.append(s) # append 
                 if limit_type == 'word': # decide limit by word or by sentence 
-                    count += len(s[1].split() 
+                    count += len(s[1].split()) 
                 else:
                     count += len(s[1])
 
