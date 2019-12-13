@@ -138,7 +138,7 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         Extracts all the words from the centroid based on the input sentences, whenever their 
         aggregated tfidf is more thatn a certain topic threshold. 
         """
-        max_topic, doc_max_topic_words, doc_topics, doc_topic_words = self.parser.parse_new(' '.join(sentences), verbose = False)
+        n_most_likely_words, max_topic, doc_max_topic_words, doc_topics, doc_topic_words = self.parser.parse_new(' '.join(sentences), verbose = False)
         #print(max_topic)
         
         #vectorizer = CountVectorizer() # instantiate COuntVectorizer object 
