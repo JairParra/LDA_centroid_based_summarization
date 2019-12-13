@@ -6,9 +6,9 @@
 # Improving Centroid-Based Text Summarization through LDA-based Document Centroids 
 
 ## Our paper: 
-- https://www.overleaf.com/9756941431sxgvqzpmrwdj
+- https://drive.google.com/file/d/1plsPxIYHsWAtW50tYm7YJvOgpuveqFqn/view?usp=sharing
 
-## Paper we're working on: 
+## This work is based on: 
 - **Centroid-based Text Summarization through Compositionality of Word Embeddings** https://www.aclweb.org/anthology/W17-1003.pdf 
 - **Repo:** https://github.com/gaetangate/text-summarizer 
 
