@@ -1,7 +1,7 @@
 [![Generic badge](https://img.shields.io/badge/Improving_Text_Summarization_Through_LDA-blue.svg)](https://shields.io/)
 [![Generic badge](https://img.shields.io/badge/Contributors-3-<COLOR>.svg)](https://shields.io/)
 [![Generic badge](https://img.shields.io/badge/COMP550-Natural_Language_Processing-red.svg)](https://shields.io/)
-[![Generic badge](https://img.shields.io/badge/Neat_level-OVER_9000-green.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/Status-Building.svg)](https://shields.io/)
 
 # Improving Centroid-Based Text Summarization through LDA-based Document Centroids 
 
