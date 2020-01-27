@@ -16,11 +16,12 @@ We adapt a recent centroid-based text summarization model, one that takes advant
 - **Repo:** https://github.com/gaetangate/text-summarizer 
 
 ## Running the Code
-1. Copy all directories from `duc2004\testdata\tasks1and2\t1.2\docs` (DUC data not distributed in this repo due to licensing rescritions) to `data_raw/articles`
-2. Move files from `duc2004\results\ROUGE\eval\peers\2` to `data_raw/summaries`
-3. Run `data_raw/import_corpus.py`
-4. Copy `data_raw/corpus.pkl` to `cloned_summarizer/text_summarizer`
-5. Models are avaliable in `src`. Example expirements avaliable in `Evaluate_DUC.ipynb`
+1. Download the Google Vectors from https://github.com/mmihaltz/word2vec-GoogleNews-vectors and place them into the `data_clean` folder. 
+2. Copy all directories from `duc2004\testdata\tasks1and2\t1.2\docs` (DUC data not distributed in this repo due to licensing rescritions) to `data_raw/articles`
+3. Move files from `duc2004\results\ROUGE\eval\peers\2` to `data_raw/summaries`
+4. Run `data_raw/import_corpus.py`
+5. Copy `data_raw/corpus.pkl` to `cloned_summarizer/text_summarizer`
+6. Models are avaliable in `src`. Example expirements avaliable in `Evaluate_DUC.ipynb`
 
 ## Centroid Embeddings:  
 
