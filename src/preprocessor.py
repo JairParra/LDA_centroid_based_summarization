@@ -203,7 +203,7 @@ class spacy_preprocessor():
                 
         try:
             
-            self.nlp = spacy.load(self.language_model) # instantiate model 
+            self.nlp = spacy.load(self.language_model, disable=['parser','ner']) # instantiate model 
             self.stopwords = set(stopwords.words(language)) # Obtain English stopwords 
             self.stemmer = SnowballStemmer(language=language) # Initialize Snowball stemmer 
             self.sent_tokenizer = sent_tokenize # Re-assign sentence tokenizer

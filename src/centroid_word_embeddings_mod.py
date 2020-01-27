@@ -6,15 +6,12 @@ Centroid-based Text Summarization through Compositionality of Word Embeddings
 Author: Gaetano Rossiello
 Email: gaetano.rossiello@uniba.it
 """
-
 import base
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from gensim.models import KeyedVectors  # Used to load the pre-trained word embeddings 
 import gensim.downloader as gensim_data_downloader
 import random
-import LDA_extractor
-
 
 def average_score(scores):
     score = 0
@@ -66,7 +63,6 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
     fitting attributes and preprocessing methods.  
     This class implements the summarize function 
     Word embeddings are obtained through Gensim, instead of BOW vectors (i.e. CountVectorizer methods)
-    This version has been modified to include our parser preprocessor classes. 
     """ 
     
     def __init__(self,
@@ -111,8 +107,6 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         self.length_param = length_param # ??? 
         self.position_param = position_param # ???
         self.parser = parser
-        
-        print("Parser selected: {}".format(type(parser)))
 
         self.zero_center_embeddings = zero_center_embeddings
 
@@ -142,20 +136,14 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
     def get_topic_idf(self, sentences):
         """
         Extracts all the words from the centroid based on the input sentences, whenever their 
-        aggregated tfidf is more thatn a certain topic threshold. (Original)
-        For the LDA model, it chooses the top_n_words from the LDA instead 
+        aggregated tfidf is more thatn a certain topic threshold. 
         """
-        n_most_likely_words, top_n_topics, top_n_words, doc_topics, doc_topic_words = self.parser.parse_new(' '.join(sentences),
-                                                                                                             top_n_topics=1,
-                                                                                                             verbose = False)
-        
-
-#        n_most_likely_words, max_topic, doc_max_topic_words, doc_topics, doc_topic_words = self.parser.parse_new(' '.join(sentences), verbose = False)
+        n_most_likely_words, top_n_topics, top_n_words, doc_topics, doc_topic_words = self.parser.parse_new(' '.join(sentences), top_n_w=30, verbose = False)
         #print(max_topic)
         
         #vectorizer = CountVectorizer() # instantiate COuntVectorizer object 
         #sent_word_matrix = vectorizer.fit_transform(sentences) # fit the input sentences 
-        
+
         #transformer = TfidfTransformer(norm=None, sublinear_tf=False, smooth_idf=False) # instantiate tfidf weighting  
         #tfidf = transformer.fit_transform(sent_word_matrix) # fit the BOW representation of matrix 
         #tfidf = tfidf.toarray() # convert to array 
@@ -171,7 +159,7 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
 
         #word_list = list(np.array(feature_names)[relevant_vector_indices]) # obtain a list of such words
 
-        return top_n_words
+        return n_most_likely_words
 
     def word_vectors_cache(self, sentences):
         """  
@@ -316,7 +304,6 @@ class CentroidWordEmbeddingsSummarizer(base.BaseSummarizer):
         return summary
 
     def _zero_center_embedding_coordinates(self):
-        
         # Create the centroid vector of the whole vector space
         count = 0
         self.centroid_space = np.zeros(self.embedding_model.vector_size, dtype="float32") #create a vector of zeros 

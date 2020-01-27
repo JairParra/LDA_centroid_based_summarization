@@ -19,13 +19,13 @@ import warnings
 import pickle  # used to save the model 
 import pandas as pd
 
-from heapq import nlargest
+from heapq import nlargest 
 from operator import itemgetter
-from preprocessor import nltk_preprocessor 
-from preprocessor import spacy_preprocessor
+from preprocessor import nltk_preprocessor  # preprocessor is a custom module
+from preprocessor import spacy_preprocessor   
 
 from gensim import corpora 
-from gensim.models.ldamodel import LdaModel  
+from gensim.models.ldamodel import LdaModel   
 
 from tqdm import tqdm
 from langdetect import detect
@@ -41,25 +41,16 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     fxn()
     
-    
-### 3. Command line arguments setting ### 
-    
-#parser = argparse.ArgumentParser(description='Parses an input text into LDA format')
-#
-#
-#parser.add_argument("cipher_folder", help="Input cipher folder path realive to the script")
-#parser.add_argument("-laplace", help="Apply Laplace smoothing", 
-#                    action="store_true")
-#parser.add_argument("-lm", help="Improved plaintext modelling", 
-#                    action="store_true")
-#
-#args = parser.parse_args()
 
     
-### 4. Class implementation ### 
+### 3. Class implementation ### 
     
-class LDA_parser(): 
-    
+class LDA_parser():  
+    """
+    This class implements a wrapper pipeline for text preprocessing and LDA parsing of an input corpus 
+    in the form ['str','str','str', ... ]. 
+    """
+ 
     def __init__(self, corpus='', 
                  language='english', 
                  preprocessor_type = "spacy", 
@@ -105,40 +96,60 @@ class LDA_parser():
         self.topics = {} # Contains a dictionary of topics with words and respective mix probabilities once "extract topics" is called.
         self.topic_words = {} # As above, but only contains the respective words of the topic
         
-
+        
+        # check for raw str corpus format
         if isinstance(corpus,str): 
             print("***WARNING***\nRaw input (str) received. Text will be sentence-tokenized and parsed accordingly.")
             print("Make sure this is intended. \n")
-            self.raw_corpus = str(corpus) 
-            self.clean_corpus = self.preprocessor.preprocess_str_corpus(corpus,
-                                                                        stem=stem, 
-                                                                        lemmatize=lemmatize, 
-                                                                        min_len=min_len)
+            self.raw_corpus = str(corpus)  # transform input to string
+            self.fit(corpus, raw=True, language=language, num_topics=num_topics, passes=passes, min_len=min_len)  # fit corpus as raw
+            
         elif corpus == '': 
             print("***WARNING***\nNull Corpus") 
         # assume input corpus is in the right format  
         else: 
             self.fit(corpus, language=language, num_topics=num_topics, passes=passes, min_len=min_len) 
-    
             
     
-    def fit(self, corpus, language = 'english', num_topics=10, passes = 100, min_len=2):  
+    def fit(self, corpus, 
+            raw = False, 
+            language = 'english', 
+            stem = False, 
+            lemmatize=False, 
+            num_topics=10, 
+            passes = 100, 
+            min_len=2, 
+            echo_corpus=False):  
         """ 
         Assumes input corpus is in the right format. 
         @args: 
             @ corpus = input corpus  
             @ language = input language  
+            @ stem/lemmatize = if true, stem or lemmatize input corpus
             @ num_topics = number of topics to choose in the algorithm 
             @ passes = number of epochs of the LDA 
             @ min_len = minimum length of words to consider when preprocessing words
         """
         
+        if echo_corpus: 
+            print("CORPUS: {}".format(corpus))
+        
         t0= time.time() 
+        
         print("Fitting LDA topic modelling...")
         self.raw_corpus = corpus # input corpus as is 
         self.language = language # in case initial language changed 
-        print("Preprocessing corpus...")
-        self.clean_corpus = self.preprocessor.preprocess_texts(self.raw_corpus, min_len=2) # preprocess text list  
+        
+        if raw: 
+            print("Preprocessing corpus...(raw)")
+            self.clean_corpus = self.preprocessor.preprocess_str_corpus(corpus,
+                                                stem=stem, 
+                                                lemmatize=lemmatize, 
+                                                min_len=min_len)
+        else: 
+            print("Preprocessing corpus...")
+            self.clean_corpus = self.preprocessor.preprocess_texts(self.raw_corpus, min_len=2) # preprocess text list  
+            
         print("Creating corpora dictionary...")
         self.dictionary = corpora.Dictionary(self.clean_corpus) # create corpora.Dictionary mapping 
         print("Translating doc2bow corpus...")
@@ -146,6 +157,7 @@ class LDA_parser():
         print("Running LDA...")
         self.lda_model =  LdaModel(self.doc2bow_corpus, num_topics = num_topics , id2word=self.dictionary, passes=passes) 
         self.topic_mixtures = self.lda_model.show_topics(num_topics = -1, num_words=10) # string representation of topics mixtures  
+       
         t1 = time.time() 
         print("\nDone in {:.3f} seconds.".format(t1-t0))
              
@@ -250,7 +262,7 @@ class LDA_parser():
         
         
         if verbose: 
-            print("LOGS: \n")
+            print("\nLOGS: \n")
             print("*** Most likely topic: ***\n", top_n_topics) 
             print("*** Words for most likely topic: ***\n", top_n_words) 
             print("*** All topics: ***\n", doc_topics) 
@@ -295,6 +307,7 @@ if __name__ == "__main__":
     print(df.head()) 
     print(df.columns)
     
+    # Obtain collection of texts from the given dataset
     text_list = list(map(str, list(df['RESULTATS_2018'])))
     
     ## Fitting the text list to the parser ###  
@@ -336,21 +349,23 @@ if __name__ == "__main__":
     
     # parse a new text using the model 1
     n_most_likely_words, top_n_topics, top_n_words, doc_topics, doc_topic_words = parser.parse_new(test_text, 
-                                                                                                   top_n_topics=100, 
-                                                                                                   top_n_w=30, # top n words 
+                                                                                                   top_n_topics=1, 
+                                                                                                   top_n_w=20, # top n words 
                                                                                                    max_words_per_topic = 50, 
                                                                                                    threshold= 0.005,
                                                                                                    verbose=True) 
+    
+    print(doc_topics)
     
     # The previous function obtains the top_n_topics and top_n_words as per user input 
     print("Top n topics: \n", top_n_topics) 
     print("Word for the top n topics: \n", top_n_words)
     
-    
-    
+        
     # tests on the indices and other
     print(parser.topic_mixtures)
     print(len(parser.topic_mixtures))
+    print(parser.topics)
     
     # display the n most likely words according to their actual densities 
     print("Most likely words: \n", n_most_likely_words)
@@ -358,8 +373,6 @@ if __name__ == "__main__":
     
         
         
-    
-
     # save the shit 
 #    parser.pickle_save()
 #    
